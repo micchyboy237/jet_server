@@ -108,21 +108,65 @@ def setup_rag(
     rag_dir: str,
     **kwargs
 ):
-    # global rag_global_dict
-    # key = generate_key(
-    #     *list(kwargs.values()),
-    # )
+    """
+    Setup a RAG object and store it in a global dictionary with a unique mode.
+
+    Args:
+        rag_dir (str): Path to the RAG directory.
+        **kwargs: Additional arguments for RAG initialization.
+
+    Returns:
+        RAG: The initialized RAG object.
+    """
+    global rag_global_dict
+
+    # Validate mode key
+    mode = kwargs.get("mode")
+    if mode is None:
+        raise ValueError("The 'mode' key must be provided in kwargs.")
+
+    # Check if mode exists; allow replacement
+    existing_key = None
+    for key, value in rag_global_dict.items():
+        if value.get("mode") == mode:
+            existing_key = key
+            break
+
+    # Initialize the RAG object
     rag = RAG(
         path_or_docs=rag_dir,
         **kwargs
     )
-    return rag
-    if key not in rag_global_dict:
-        logger.debug("Creating rag object on cache key:", key)
-        rag_global_dict[key] = rag
-    else:
-        logger.success("Found cache for RAG object cache key:", key)
-    return rag_global_dict[key]
+
+    # Generate a unique key based on dependencies
+    deps = [
+        "system",
+        "chunk_size",
+        "chunk_overlap",
+        "sub_chunk_sizes",
+        "with_heirarchy",
+        "embed_model",
+        "mode",
+        "store_path",
+    ]
+    deps_values = [kwargs[key] for key in deps if key in kwargs]
+    key = generate_key(*deps_values)
+
+    if existing_key:
+        logger.warning("Replacing existing RAG object with mode: %s", mode)
+        del rag_global_dict[existing_key]
+
+    # Cache the new RAG object
+    rag_global_dict[key] = {"rag": rag, "mode": mode}
+    logger.debug("Created RAG object for cache key: %s", key)
+
+    logger.newline()
+    logger.info("Cached RAG in memory:", len(rag_global_dict))
+    logger.debug([{"mode": value["mode"], "id": key}
+                 for key, value in rag_global_dict.items()])
+    logger.newline()
+
+    return rag_global_dict[key]["rag"]
 
 
 def event_stream_query(query_request: QueryRequest):
@@ -219,20 +263,22 @@ if __name__ == "__main__":
     from pprint import pprint
 
     async def main():
+        query = "Tell me about yourself."
         # Create a QueryRequest object with the specified parameters
         query_request = QueryRequest(
-            query="Tell me about yourself.",
+            query=query,
             chunk_size=1024,
             chunk_overlap=40,
             sub_chunk_sizes=[512, 256, 128],
             top_k=20,
-            mode="deeplake",
+            mode="heirarchy",
         )
 
         # Call the get_nodes endpoint
         response = await get_nodes(query_request)
 
         # Print the response
-        pprint(response.dict())
+        logger.debug(query)
+        logger.success(format_json(response.data))
 
     asyncio.run(main())

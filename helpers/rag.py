@@ -2,7 +2,7 @@ from typing import Callable, Generator, Literal, Optional
 # from jet.llm.ollama.constants import OLLAMA_SMALL_EMBED_MODEL
 # from jet.llm.ollama.models import OLLAMA_EMBED_MODELS, OLLAMA_MODEL_NAMES
 from llama_index.core.schema import Document
-from jet.llm.query.retrievers import query_llm, setup_deeplake_query, setup_index
+from jet.llm.query.retrievers import query_llm, setup_index
 
 
 class RAG:
@@ -39,13 +39,3 @@ class RAG:
             query, **kwargs)
 
         return result
-
-    def setup_deeplake_vectors(self) -> Callable:
-        query_nodes = setup_deeplake_query(
-            data_dir=self.path_or_docs,
-            store_path=self.store_path,
-            embed_model=self.embed_model,
-            overwrite=self.overwrite
-        )
-
-        return query_nodes

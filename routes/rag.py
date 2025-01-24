@@ -39,11 +39,11 @@ class QueryRequest(BaseModel):
     chunk_size: int = 1024
     chunk_overlap: int = 40
     sub_chunk_sizes: list[int] = []
-    with_heirarchy: bool = True
-    top_k: int = 20
+    with_hierarchy: bool = True
+    top_k: Optional[int] = None
     model: str = "llama3.2"
     embed_model: str = "mxbai-embed-large"
-    mode: Literal["fusion", "heirarchy", "deeplake"] = "fusion"
+    mode: Literal["fusion", "hierarchy", "deeplake"] = "fusion"
     store_path: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/.cache/deeplake/store_1"
     score_threshold: float = 0.0
 
@@ -104,10 +104,7 @@ def generate_key(*args: Any) -> str:
         raise ValueError(f"Invalid argument provided: {e}")
 
 
-def setup_rag(
-    rag_dir: str,
-    **kwargs
-):
+def setup_rag(rag_dir: str, **kwargs):
     """
     Setup a RAG object and store it in a global dictionary with a unique mode.
 
@@ -125,12 +122,32 @@ def setup_rag(
     if mode is None:
         raise ValueError("The 'mode' key must be provided in kwargs.")
 
-    # Check if mode exists; allow replacement
+    # Generate hash for the current set of arguments
+    deps = [
+        "system",
+        "chunk_size",
+        "chunk_overlap",
+        "sub_chunk_sizes",
+        "with_hierarchy",
+        "embed_model",
+        "mode",
+        "store_path",
+    ]
+    deps_values = [kwargs[key] for key in deps if key in kwargs]
+    current_hash = generate_key(*deps_values)
+
+    # Check if RAG with the same mode and hash already exists
     existing_key = None
     for key, value in rag_global_dict.items():
-        if value.get("mode") == mode:
+        # If mode matches and the hash of parameters is the same
+        if value.get("mode") == mode and value.get("hash") == current_hash:
             existing_key = key
             break
+
+    if existing_key:
+        # If RAG object exists with the same mode and parameters, reuse it
+        logger.info("Reusing existing RAG object with mode: %s", mode)
+        return rag_global_dict[existing_key]["rag"]
 
     # Initialize the RAG object
     rag = RAG(
@@ -138,27 +155,13 @@ def setup_rag(
         **kwargs
     )
 
-    # Generate a unique key based on dependencies
-    deps = [
-        "system",
-        "chunk_size",
-        "chunk_overlap",
-        "sub_chunk_sizes",
-        "with_heirarchy",
-        "embed_model",
-        "mode",
-        "store_path",
-    ]
-    deps_values = [kwargs[key] for key in deps if key in kwargs]
-    key = generate_key(*deps_values)
-
-    if existing_key:
-        logger.warning("Replacing existing RAG object with mode: %s", mode)
-        del rag_global_dict[existing_key]
-
-    # Cache the new RAG object
-    rag_global_dict[key] = {"rag": rag, "mode": mode}
-    logger.debug("Created RAG object for cache key: %s", key)
+    # Cache the new RAG object with the computed hash
+    rag_global_dict[current_hash] = {
+        "rag": rag,
+        "mode": mode,
+        "hash": current_hash
+    }
+    logger.debug("Created RAG object for cache key: %s", current_hash)
 
     logger.newline()
     logger.info("Cached RAG in memory:", len(rag_global_dict))
@@ -166,7 +169,7 @@ def setup_rag(
                  for key, value in rag_global_dict.items()])
     logger.newline()
 
-    return rag_global_dict[key]["rag"]
+    return rag_global_dict[current_hash]["rag"]
 
 
 def event_stream_query(query_request: QueryRequest):
@@ -271,7 +274,7 @@ if __name__ == "__main__":
             chunk_overlap=40,
             sub_chunk_sizes=[512, 256, 128],
             top_k=20,
-            mode="heirarchy",
+            mode="hierarchy",
         )
 
         # Call the get_nodes endpoint

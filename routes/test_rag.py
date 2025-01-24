@@ -1,9 +1,8 @@
+from routes.rag import QueryRequest, get_nodes
+from pprint import pprint
+import asyncio
 import os
 print(os.getcwd())
-
-import asyncio
-from pprint import pprint
-from routes.rag import QueryRequest, get_nodes
 
 
 async def main():
@@ -13,7 +12,7 @@ async def main():
         chunk_size=1024,
         chunk_overlap=40,
         sub_chunk_sizes=[512, 256, 128],
-        with_heirarchy=True,
+        with_hierarchy=True,
         top_k=20,
     )
 

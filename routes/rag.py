@@ -46,6 +46,7 @@ class QueryRequest(BaseModel):
     mode: Literal["fusion", "hierarchy", "deeplake"] = "fusion"
     store_path: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/.cache/deeplake/store_1"
     score_threshold: float = 0.0
+    split_mode: list[Literal["markdown", "hierarchy"]] = []
 
 
 class Metadata(BaseModel):
@@ -132,6 +133,7 @@ def setup_rag(rag_dir: str, **kwargs):
         "embed_model",
         "mode",
         "store_path",
+        "split_mode",
     ]
     deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)

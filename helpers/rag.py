@@ -5,6 +5,19 @@ from llama_index.core.schema import Document
 from jet.llm.query.retrievers import query_llm, setup_index
 
 
+def remove_substrings(contexts: list[str]) -> list[str]:
+    # Sort by length to ensure that substrings are checked after the longer strings
+    contexts.sort(key=len, reverse=True)
+
+    result = []
+    for context in contexts:
+        # Add the context to result if it's not a substring of any existing item
+        if not any(context in other for other in result):
+            result.append(context)
+
+    return result
+
+
 class RAG:
     def __init__(
         self,
@@ -24,13 +37,16 @@ class RAG:
             **kwargs,
         )
 
-    def query(self, query: str, **kwargs) -> str | Generator[str, None, None]:
+    def query(self, query: str, contexts: list[str] = [], **kwargs) -> str | Generator[str, None, None]:
         from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
 
-        result = self.query_nodes(
-            query, **kwargs)
+        if not contexts:
+            result = self.query_nodes(
+                query, **kwargs)
+            contexts = result['texts']
+            contexts = remove_substrings(contexts)
 
-        yield from query_llm(query, result['texts'], model=self.model)
+        yield from query_llm(query, contexts, model=self.model)
 
     def get_results(self, query: str, **kwargs) -> str | Generator[str, None, None]:
         from llama_index.core.retrievers.fusion_retriever import FUSION_MODES

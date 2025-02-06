@@ -2,6 +2,7 @@ import hashlib
 import json
 from typing import Any, Awaitable, Generator, Literal, Optional
 from deeplake.core.vectorstore.deeplake_vectorstore import VectorStore
+from jet.llm.ollama.constants import OLLAMA_LARGE_EMBED_MODEL
 from jet.llm.ollama.embeddings import get_ollama_embedding_function
 from jet.llm.utils.llama_index_utils import display_jet_source_nodes
 from llama_index.core.schema import NodeWithScore, TextNode
@@ -38,15 +39,19 @@ class QueryRequest(BaseModel):
     )
     chunk_size: int = 1024
     chunk_overlap: int = 40
-    sub_chunk_sizes: list[int] = []
+    sub_chunk_sizes: list[int] = [512, 256, 128]
     with_hierarchy: bool = True
     top_k: Optional[int] = None
     model: str = "llama3.2"
-    embed_model: str = "mxbai-embed-large"
+    embed_model: str = OLLAMA_LARGE_EMBED_MODEL
     mode: Literal["fusion", "hierarchy", "deeplake"] = "fusion"
     store_path: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/.cache/deeplake/store_1"
     score_threshold: float = 0.0
     split_mode: list[Literal["markdown", "hierarchy"]] = []
+
+
+class SearchRequest(QueryRequest):
+    contexts: list[str] = []
 
 
 class Metadata(BaseModel):
@@ -58,6 +63,8 @@ class Metadata(BaseModel):
     last_modified_date: str
     chunk_size: Optional[int] = None
     depth: Optional[int] = None
+    start_line_idx: Optional[int] = None
+    end_line_idx: Optional[int] = None
 
 
 class Node(BaseModel):
@@ -174,16 +181,17 @@ def setup_rag(rag_dir: str, **kwargs):
     return rag_global_dict[current_hash]["rag"]
 
 
-def event_stream_query(query_request: QueryRequest):
-    query_request_dict = query_request.__dict__.copy()
-    query = query_request_dict.pop("query")
-    top_k = query_request.top_k
+def event_stream_query(search_request: SearchRequest):
+    search_request_dict = search_request.__dict__.copy()
+    query = search_request_dict.pop("query")
+    contexts = search_request_dict.pop("contexts")
+    top_k = search_request.top_k
 
     rag = setup_rag(
-        **query_request_dict
+        **search_request_dict
     )
 
-    for chunk in rag.query(query, top_k=top_k):
+    for chunk in rag.query(query, contexts, top_k=top_k):
         yield f"data: {chunk}\n\n"
 
 
@@ -203,14 +211,14 @@ def generate_sub_prompts(prompts: list[str]) -> Generator[str, None, None]:
 
 
 @router.post("/query")
-async def query(query_request: QueryRequest):
+async def query(request: SearchRequest):
 
     headers = {
         "Cache-Control": "no-cache",
         "Connection": "keep-alive",
         "Content-Type": "text/event-stream",
     }
-    return StreamingResponse(event_stream_query(query_request), headers=headers)
+    return StreamingResponse(event_stream_query(request), headers=headers)
 
 
 @router.post("/nodes", response_model=NodesResponse)

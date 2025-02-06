@@ -2,7 +2,7 @@ import traceback
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
-from jet.utils import get_class_name
+from jet.utils.class_utils import get_class_name
 from jet.logger import logger
 
 

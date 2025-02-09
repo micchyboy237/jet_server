@@ -7,6 +7,7 @@ from jet.llm.ollama.constants import OLLAMA_LARGE_EMBED_MODEL
 from jet.llm.ollama.embeddings import get_ollama_embedding_function
 from jet.llm.utils.llama_index_utils import display_jet_source_nodes
 from llama_index.core.schema import NodeWithScore, TextNode
+import requests
 from tqdm import tqdm
 from jet.llm.main.prompts_generator import PromptsGenerator
 from jet.llm.ollama.base import Ollama
@@ -18,6 +19,7 @@ from jet.vectors import get_source_node_attributes
 from jet.logger import logger
 
 from helpers.rag import RAG
+from config import stop_event
 
 router = APIRouter()
 
@@ -216,15 +218,66 @@ def generate_sub_prompts(prompts: list[str]) -> Generator[str, None, None]:
         generation_tqdm.update(1)
 
 
-@router.post("/query")
-async def query(request: SearchRequest):
+# @router.post("/query")
+# async def query(request: SearchRequest):
+
+#     headers = {
+#         "Cache-Control": "no-cache",
+#         "Connection": "keep-alive",
+#         "Content-Type": "text/event-stream",
+#     }
+#     return StreamingResponse(event_stream_query(request), headers=headers)
+
+
+@router.get("/query")
+async def query(
+    query: str,
+    rag_dir: str = rag_dir,
+    extensions: list[str] = extensions,
+    system: str = system,
+    chunk_size: int = chunk_size,
+    chunk_overlap: int = chunk_overlap,
+    sub_chunk_sizes: list[int] = sub_chunk_sizes,
+    with_hierarchy: bool = with_hierarchy,
+    top_k: Optional[int] = top_k,
+    model: str = model,
+    embed_model: str = embed_model,
+    mode: Literal["fusion", "hierarchy",
+                  "deeplake", "faiss", "graph_nx"] = mode,
+    store_path: str = store_path,
+    score_threshold: float = score_threshold,
+    split_mode: list[Literal["markdown", "hierarchy"]] = split_mode,
+    contexts: list[str] = contexts
+):
+    global stop_event
+
+    if stop_event.is_set():
+        stop_event.clear()
 
     headers = {
         "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
+        # "Connection": "keep-alive",
         "Content-Type": "text/event-stream",
     }
-    return StreamingResponse(event_stream_query(request), headers=headers)
+    search_request = SearchRequest(
+        query=query,
+        rag_dir=rag_dir,
+        extensions=extensions,
+        system=system,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        sub_chunk_sizes=sub_chunk_sizes,
+        with_hierarchy=with_hierarchy,
+        top_k=top_k,
+        model=model,
+        embed_model=embed_model,
+        mode=mode,
+        store_path=store_path,
+        score_threshold=score_threshold,
+        split_mode=split_mode,
+        contexts=contexts,
+    )
+    return StreamingResponse(event_stream_query(search_request), headers=headers)
 
 
 def event_stream_query(search_request: SearchRequest):
@@ -239,8 +292,27 @@ def event_stream_query(search_request: SearchRequest):
         **search_request_dict
     )
 
-    for chunk in rag.query(query, contexts, top_k=top_k, system=system):
-        yield f"data: {chunk}\n\n"
+    for chunk in rag.query(query, contexts, top_k=top_k, system=system, stop_event=stop_event):
+        message = f"data: {chunk}\n\n"
+        yield message
+
+
+@router.post("/query/stop")
+async def query_stop():
+    global stop_event
+    # Start streaming in a thread
+    # thread = threading.Thread(target=stream_chat)
+    # thread.start()
+
+    stop_event.set()
+
+    time.sleep(1)
+    response = requests.post("http://localhost:11434/api/chat/stop")
+
+    # thread.join()
+    logger.newline()
+    logger.purple("Stream fully stopped.")
+    logger.purple("Response:", response)
 
 
 @router.post("/nodes", response_model=NodesResponse)
@@ -264,7 +336,7 @@ async def get_nodes(query_request: QueryRequest):
 async def stream_nodes(query_request: QueryRequest):
     headers = {
         "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
+        # "Connection": "keep-alive",
         "Content-Type": "text/event-stream",
     }
     return StreamingResponse(event_stream_nodes(query_request), headers=headers)
@@ -294,7 +366,7 @@ def event_stream_nodes(query_request: QueryRequest) -> Generator[str, None, None
 
 
 @router.post("/sample-stream")
-async def sample_stream(request: Request):
+async def sample_stream_post(request: Request):
     """
     Endpoint to stream responses for a given thread_id.
     """
@@ -303,21 +375,39 @@ async def sample_stream(request: Request):
     request_params_str = body.decode('utf-8')
     request_params = json.loads(request_params_str)
 
-    logger.debug("sample_stream:")
+    logger.debug("POST sample_stream:")
     logger.orange(format_json(request_params))
 
     headers = {
         "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
+        # "Connection": "keep-alive",
         "Content-Type": "text/event-stream",
     }
     return StreamingResponse(event_sample_stream(request_params), headers=headers)
 
 
-def event_sample_stream(request_params):
+@router.get("/sample-stream")
+async def sample_stream_get():
+    """
+    Endpoint to stream responses for a given thread_id.
+    """
+
+    logger.debug("GET sample_stream:")
+
+    headers = {
+        "Cache-Control": "no-cache",
+        # "Connection": "keep-alive",
+        "Content-Type": "text/event-stream",
+    }
+    return StreamingResponse(event_sample_stream(), headers=headers)
+
+
+def event_sample_stream(request_params: Optional[Any] = None):
     """Generator function to yield events for streaming."""
     for i in range(10):  # Example: Stream 10 chunks
-        yield f"data: Message {i}\n\n"
+        chunk = f"data: Message {i}\n\n"
+        yield chunk
+        logger.success(chunk)
         time.sleep(1)  # Simulate delay between chunks
 
 

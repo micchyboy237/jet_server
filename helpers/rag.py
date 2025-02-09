@@ -1,3 +1,4 @@
+import threading
 from typing import Callable, Generator, Literal, Optional
 # from jet.llm.ollama.constants import OLLAMA_SMALL_EMBED_MODEL
 # from jet.llm.ollama.models import OLLAMA_EMBED_MODELS, OLLAMA_MODEL_NAMES
@@ -48,7 +49,7 @@ class RAG:
                 **kwargs,
             )
 
-    def query(self, query: str, contexts: list[str] = [], system: Optional[str] = None, **kwargs) -> str | Generator[str, None, None]:
+    def query(self, query: str, contexts: list[str] = [], system: Optional[str] = None, stop_event: Optional[threading.Event] = None, **kwargs) -> str | Generator[str, None, None]:
         from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
 
         if not contexts:
@@ -57,7 +58,7 @@ class RAG:
             contexts = result['texts']
             contexts = remove_substrings(contexts)
 
-        yield from query_llm(query, contexts, model=self.model, system=system)
+        yield from query_llm(query, contexts, model=self.model, system=system, stop_event=stop_event)
 
     def get_results(self, query: str, **kwargs) -> str | Generator[str, None, None]:
         from llama_index.core.retrievers.fusion_retriever import FUSION_MODES

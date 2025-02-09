@@ -231,23 +231,24 @@ def generate_sub_prompts(prompts: list[str]) -> Generator[str, None, None]:
 
 @router.get("/query")
 async def query(
-    query: str,
-    rag_dir: str = rag_dir,
-    extensions: list[str] = extensions,
-    system: str = system,
-    chunk_size: int = chunk_size,
-    chunk_overlap: int = chunk_overlap,
-    sub_chunk_sizes: list[int] = sub_chunk_sizes,
-    with_hierarchy: bool = with_hierarchy,
-    top_k: Optional[int] = top_k,
-    model: str = model,
-    embed_model: str = embed_model,
+    query: str = Query(...),
+    rag_dir: str = Query(default=rag_dir),
+    extensions: list[str] = Query(default=extensions),
+    system: str = Query(default=system),
+    chunk_size: int = Query(default=chunk_size),
+    chunk_overlap: int = Query(default=chunk_overlap),
+    sub_chunk_sizes: list[int] = Query(default=sub_chunk_sizes),
+    with_hierarchy: bool = Query(default=with_hierarchy),
+    top_k: Optional[int] = Query(default=top_k),
+    model: str = Query(default=model),
+    embed_model: str = Query(default=embed_model),
     mode: Literal["fusion", "hierarchy",
-                  "deeplake", "faiss", "graph_nx"] = mode,
-    store_path: str = store_path,
-    score_threshold: float = score_threshold,
-    split_mode: list[Literal["markdown", "hierarchy"]] = split_mode,
-    contexts: list[str] = contexts
+                  "deeplake", "faiss", "graph_nx"] = Query(default=mode),
+    store_path: str = Query(default=store_path),
+    score_threshold: float = Query(default=score_threshold),
+    split_mode: list[Literal["markdown", "hierarchy"]
+                     ] = Query(default=split_mode),
+    contexts: list[str] = Query(default=contexts),
 ):
     global stop_event
 

@@ -182,22 +182,6 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
     return rag_global_dict[current_hash]["rag"]
 
 
-def event_stream_query(search_request: SearchRequest):
-    search_request_dict = search_request.__dict__.copy()
-    query = search_request_dict.pop("query")
-    system = search_request_dict.pop("system")
-    contexts = search_request_dict.pop("contexts")
-    top_k = search_request.top_k
-
-    rag = setup_rag(
-        system=system,
-        **search_request_dict
-    )
-
-    for chunk in rag.query(query, contexts, top_k=top_k, system=system):
-        yield f"data: {chunk}\n\n"
-
-
 def generate_sub_prompts(prompts: list[str]) -> Generator[str, None, None]:
     """Generator function to yield events for streaming."""
     processor = PromptsGenerator(llm=Ollama(model="llama3.1"))
@@ -222,6 +206,22 @@ async def query(request: SearchRequest):
         "Content-Type": "text/event-stream",
     }
     return StreamingResponse(event_stream_query(request), headers=headers)
+
+
+def event_stream_query(search_request: SearchRequest):
+    search_request_dict = search_request.__dict__.copy()
+    query = search_request_dict.pop("query")
+    system = search_request_dict.pop("system")
+    contexts = search_request_dict.pop("contexts")
+    top_k = search_request.top_k
+
+    rag = setup_rag(
+        system=system,
+        **search_request_dict
+    )
+
+    for chunk in rag.query(query, contexts, top_k=top_k, system=system):
+        yield f"data: {chunk}\n\n"
 
 
 @router.post("/nodes", response_model=NodesResponse)

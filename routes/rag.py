@@ -44,7 +44,8 @@ class QueryRequest(BaseModel):
     top_k: Optional[int] = None
     model: str = "llama3.2"
     embed_model: str = OLLAMA_LARGE_EMBED_MODEL
-    mode: Literal["fusion", "hierarchy", "deeplake"] = "fusion"
+    mode: Literal["fusion", "hierarchy",
+                  "deeplake", "faiss", "graph_nx"] = "fusion"
     store_path: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/.cache/deeplake/store_1"
     score_threshold: float = 0.0
     split_mode: list[Literal["markdown", "hierarchy"]] = []
@@ -112,7 +113,7 @@ def generate_key(*args: Any) -> str:
         raise ValueError(f"Invalid argument provided: {e}")
 
 
-def setup_rag(rag_dir: str, **kwargs):
+def setup_rag(rag_dir: str, **kwargs) -> RAG:
     """
     Setup a RAG object and store it in a global dictionary with a unique mode.
 
@@ -184,14 +185,16 @@ def setup_rag(rag_dir: str, **kwargs):
 def event_stream_query(search_request: SearchRequest):
     search_request_dict = search_request.__dict__.copy()
     query = search_request_dict.pop("query")
+    system = search_request_dict.pop("system")
     contexts = search_request_dict.pop("contexts")
     top_k = search_request.top_k
 
     rag = setup_rag(
+        system=system,
         **search_request_dict
     )
 
-    for chunk in rag.query(query, contexts, top_k=top_k):
+    for chunk in rag.query(query, contexts, top_k=top_k, system=system):
         yield f"data: {chunk}\n\n"
 
 

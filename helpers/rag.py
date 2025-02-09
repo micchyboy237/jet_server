@@ -2,7 +2,7 @@ from typing import Callable, Generator, Literal, Optional
 # from jet.llm.ollama.constants import OLLAMA_SMALL_EMBED_MODEL
 # from jet.llm.ollama.models import OLLAMA_EMBED_MODELS, OLLAMA_MODEL_NAMES
 from llama_index.core.schema import Document
-from jet.llm.query.retrievers import query_llm, setup_index
+from jet.llm.query.retrievers import query_llm, setup_index, setup_semantic_search
 
 
 def remove_substrings(contexts: list[str]) -> list[str]:
@@ -24,20 +24,31 @@ class RAG:
         path_or_docs: str | list[Document],
         system: Optional[str] = None,
         model: Optional[str] = None,
+        mode: Optional[str] = None,
         **kwargs,
     ):
         self.path_or_docs = path_or_docs
         self.system = system
         self.model = model
+        self.mode = mode
         self.store_path = kwargs.get("store_path")
         self.embed_model = kwargs.get("embed_model")
         self.overwrite = kwargs.get("overwrite")
-        self.query_nodes = setup_index(
-            path_or_docs,
-            **kwargs,
-        )
 
-    def query(self, query: str, contexts: list[str] = [], **kwargs) -> str | Generator[str, None, None]:
+        if mode in ["faiss", "graph_nx"]:
+            self.query_nodes = setup_semantic_search(
+                path_or_docs,
+                mode=mode,
+                **kwargs,
+            )
+        else:
+            self.query_nodes = setup_index(
+                path_or_docs,
+                mode=mode,
+                **kwargs,
+            )
+
+    def query(self, query: str, contexts: list[str] = [], system: Optional[str] = None, **kwargs) -> str | Generator[str, None, None]:
         from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
 
         if not contexts:
@@ -46,12 +57,16 @@ class RAG:
             contexts = result['texts']
             contexts = remove_substrings(contexts)
 
-        yield from query_llm(query, contexts, model=self.model)
+        yield from query_llm(query, contexts, model=self.model, system=system)
 
     def get_results(self, query: str, **kwargs) -> str | Generator[str, None, None]:
         from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
 
-        result = self.query_nodes(
-            query, **kwargs)
+        options = {
+            "query": query,
+            **kwargs
+        }
+
+        result = self.query_nodes(**options)
 
         return result

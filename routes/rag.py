@@ -117,16 +117,20 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
     """
     global rag_global_dict
 
-    # Validate mode key
     mode = kwargs.get("mode")
     if mode is None:
         raise ValueError("The 'mode' key must be provided in kwargs.")
 
-    # Generate hash for the current set of arguments
-    deps = ["mode", "embed_model", "json_attributes",
-            "chunk_size", "chunk_overlap"]
-    deps_values = [rag_dir] + [kwargs[key] for key in deps if key in kwargs]
+    # Dependencies for hash computation
+    deps = ["embed_model", "json_attributes", "chunk_size", "chunk_overlap"]
+    deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)
+
+    # Check if cache needs to be cleared due to changed dependencies
+    if any(key in kwargs and kwargs[key] != rag_global_dict.get("last_" + key) for key in ["path_or_docs", "embed_model"]):
+        logger.warning(
+            "Detected change in 'path_or_docs' or 'embed_model'. Clearing RAG cache.")
+        rag_global_dict.clear()
 
     # Check if RAG with the same mode and hash already exists
     existing_entry = rag_global_dict.get(current_hash)
@@ -135,24 +139,23 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
         return existing_entry["rag"]
 
     # Initialize the RAG object
-    rag = RAG(
-        path_or_docs=rag_dir,
-        **kwargs
-    )
+    rag = RAG(path_or_docs=rag_dir, **kwargs)
 
-    # Cache the new RAG object with the computed hash
-    rag_global_dict.put(current_hash, {
+    # Store the latest values for comparison
+    rag_global_dict.put("last_path_or_docs", rag_dir)
+    rag_global_dict.put("last_embed_model", kwargs.get("embed_model"))
+
+    # Cache the new RAG object
+    rag_global_dict[current_hash] = {
         "rag": rag,
         "mode": mode,
         "hash": current_hash
-    })
-    logger.debug("Created RAG object for cache key: %s", current_hash)
+    }
 
-    logger.newline()
-    logger.info("Cached RAG in memory: %d", len(rag_global_dict.cache))
+    logger.debug("Created RAG object for cache key: %s", current_hash)
+    logger.info("Cached RAG in memory: %d", len(rag_global_dict))
     logger.debug([{"mode": value["mode"], "id": key}
-                 for key, value in rag_global_dict.cache.items()])
-    logger.newline()
+                 for key, value in rag_global_dict.items()])
 
     return rag
 
@@ -245,6 +248,7 @@ def event_stream_query(search_request: SearchRequest):
     top_k = search_request.top_k
 
     rag = setup_rag(
+        search_request_dict.pop("rag_dir"),
         system=system,
         **search_request_dict
     )
@@ -278,6 +282,7 @@ async def get_nodes(query_request: QueryRequest):
     query = query_request_dict.pop("query")
 
     rag = setup_rag(
+        query_request_dict.pop("rag_dir"),
         **query_request_dict
     )
 
@@ -305,6 +310,7 @@ def event_stream_nodes(query_request: QueryRequest) -> Generator[str, None, None
     top_k = query_request.top_k
 
     rag = setup_rag(
+        query_request_dict.pop("rag_dir"),
         **query_request_dict
     )
 

@@ -18,3 +18,7 @@ class LRUCache:
         elif len(self.cache) >= self.max_size:
             self.cache.popitem(last=False)  # Remove oldest item
         self.cache[key] = value
+
+    def clear(self):
+        """Clear all items in the cache."""
+        self.cache.clear()

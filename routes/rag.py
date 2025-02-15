@@ -154,8 +154,8 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
 
     logger.debug("Created RAG object for cache key: %s", current_hash)
     logger.info("Cached RAG in memory: %d", len(rag_global_dict))
-    logger.debug([{"mode": value["mode"], "id": key}
-                 for key, value in rag_global_dict.items()])
+    logger.debug(format_json({key: value if not isinstance(
+        value, dict) else value['mode'] for key, value in rag_global_dict.items()}))
 
     return rag
 

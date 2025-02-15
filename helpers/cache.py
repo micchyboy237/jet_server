@@ -22,3 +22,11 @@ class LRUCache:
     def clear(self):
         """Clear all items in the cache."""
         self.cache.clear()
+
+    def __len__(self):
+        """Return number of items in cache."""
+        return len(self.cache)
+
+    def items(self):
+        """Return a view of the cache's items (key-value pairs)."""
+        return self.cache.items()

@@ -1,8 +1,9 @@
 import threading
 from typing import Callable, Generator, Literal, Optional
+from llama_index.core.schema import Document
 # from jet.llm.ollama.constants import OLLAMA_SMALL_EMBED_MODEL
 # from jet.llm.ollama.models import OLLAMA_EMBED_MODELS, OLLAMA_MODEL_NAMES
-from llama_index.core.schema import Document
+from jet.llm.ollama.base import initialize_ollama_settings
 from jet.llm.query.retrievers import query_llm, setup_index, setup_semantic_search
 
 
@@ -34,7 +35,16 @@ class RAG:
         self.mode = mode
         self.store_path = kwargs.get("store_path")
         self.embed_model = kwargs.get("embed_model")
+        self.chunk_size = kwargs.get("chunk_size")
+        self.chunk_overlap = kwargs.get("chunk_overlap")
         self.overwrite = kwargs.get("overwrite")
+
+        initialize_ollama_settings({
+            "llm_model": self.model,
+            "embedding_model": self.embed_model,
+            "chunk_size": self.chunk_size,
+            "chunk_overlap": self.chunk_overlap,
+        })
 
         if mode in ["faiss", "graph_nx"]:
             self.query_nodes = setup_semantic_search(

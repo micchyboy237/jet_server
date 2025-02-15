@@ -1,4 +1,3 @@
-import hashlib
 import json
 import time
 from typing import Any, Awaitable, Generator, Literal, Optional
@@ -20,12 +19,14 @@ from jet.vectors import get_source_node_attributes
 from jet.logger import logger
 
 from helpers.rag import RAG
+from helpers.cache import LRUCache
+from utils.data import generate_key
 from config import stop_event
 
 router = APIRouter()
 
 # Create default RAG instance (will be updated in the endpoint)
-rag_global_dict: dict[str, object] = {}
+rag_global_dict = LRUCache(max_size=5)
 
 rag_dir: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/data/jet-resume/data"
 json_attributes: list[str] = ["details"]
@@ -103,26 +104,6 @@ class VectorNodesResponse(BaseModel):
         return cls(data=transformed_nodes)
 
 
-def generate_key(*args: Any) -> str:
-    """
-    Generate a SHA256 hash key from the concatenation of input arguments.
-
-    Args:
-        *args: Variable length argument list.
-
-    Returns:
-        A SHA256 hash string.
-    """
-    try:
-        # Combine the arguments into a JSON string
-        concatenated = json.dumps(args, separators=(',', ':'))
-        # Generate a SHA256 hash of the concatenated string
-        key = hashlib.sha256(concatenated.encode()).hexdigest()
-        return key
-    except TypeError as e:
-        raise ValueError(f"Invalid argument provided: {e}")
-
-
 def setup_rag(rag_dir: str, **kwargs) -> RAG:
     """
     Setup a RAG object and store it in a global dictionary with a unique mode.
@@ -142,25 +123,16 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
         raise ValueError("The 'mode' key must be provided in kwargs.")
 
     # Generate hash for the current set of arguments
-    deps = [
-        "mode",
-        "json_attributes",
-    ]
-    deps_values = [kwargs[key] for key in deps if key in kwargs]
+    deps = ["mode", "embed_model", "json_attributes",
+            "chunk_size", "chunk_overlap"]
+    deps_values = [rag_dir] + [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)
 
     # Check if RAG with the same mode and hash already exists
-    existing_key = None
-    for key, value in rag_global_dict.items():
-        # If mode matches and the hash of parameters is the same
-        if value.get("mode") == mode and value.get("hash") == current_hash:
-            existing_key = key
-            break
-
-    if existing_key:
-        # If RAG object exists with the same mode and parameters, reuse it
+    existing_entry = rag_global_dict.get(current_hash)
+    if existing_entry:
         logger.info("Reusing existing RAG object with mode: %s", mode)
-        return rag_global_dict[existing_key]["rag"]
+        return existing_entry["rag"]
 
     # Initialize the RAG object
     rag = RAG(
@@ -169,20 +141,20 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
     )
 
     # Cache the new RAG object with the computed hash
-    rag_global_dict[current_hash] = {
+    rag_global_dict.put(current_hash, {
         "rag": rag,
         "mode": mode,
         "hash": current_hash
-    }
+    })
     logger.debug("Created RAG object for cache key: %s", current_hash)
 
     logger.newline()
-    logger.info("Cached RAG in memory:", len(rag_global_dict))
+    logger.info("Cached RAG in memory: %d", len(rag_global_dict.cache))
     logger.debug([{"mode": value["mode"], "id": key}
-                 for key, value in rag_global_dict.items()])
+                 for key, value in rag_global_dict.cache.items()])
     logger.newline()
 
-    return rag_global_dict[current_hash]["rag"]
+    return rag
 
 
 def generate_sub_prompts(prompts: list[str]) -> Generator[str, None, None]:

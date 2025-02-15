@@ -146,11 +146,11 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
     rag_global_dict.put("last_embed_model", kwargs.get("embed_model"))
 
     # Cache the new RAG object
-    rag_global_dict[current_hash] = {
+    rag_global_dict.put(current_hash, {
         "rag": rag,
         "mode": mode,
         "hash": current_hash
-    }
+    })
 
     logger.debug("Created RAG object for cache key: %s", current_hash)
     logger.info("Cached RAG in memory: %d", len(rag_global_dict))

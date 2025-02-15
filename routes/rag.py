@@ -27,7 +27,8 @@ router = APIRouter()
 rag_global_dict: dict[str, object] = {}
 
 rag_dir: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/data/jet-resume/data"
-extensions: list[str] = [".md", ".mdx", ".rst"]
+extensions: list[str] = [".md", ".mdx", ".rst", ".json"]
+json_attributes: list[str] = []
 system: str = (
     "You are a job applicant providing tailored responses during an interview.\n"
     "Always answer questions using the provided context as if it is your resume, "
@@ -57,6 +58,7 @@ class QueryRequest(BaseModel):
     query: str
     rag_dir: str = rag_dir
     extensions: list[str] = extensions
+    json_attributes: list[str] = json_attributes
     system: str = system
     chunk_size: int = chunk_size
     chunk_overlap: int = chunk_overlap
@@ -76,26 +78,13 @@ class SearchRequest(QueryRequest):
     contexts: list[str] = contexts
 
 
-class Metadata(BaseModel):
-    file_name: str
-    file_path: str
-    file_type: str
-    file_size: int
-    creation_date: str
-    last_modified_date: str
-    chunk_size: Optional[int] = None
-    depth: Optional[int] = None
-    start_line_idx: Optional[int] = None
-    end_line_idx: Optional[int] = None
-
-
 class Node(BaseModel):
     id: str
     score: float
     text_length: int
     start_end: list[int]
     text: str
-    metadata: Metadata
+    metadata: Optional[dict] = None
 
 
 class NodesResponse(BaseModel):
@@ -163,6 +152,7 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
         "mode",
         "store_path",
         "split_mode",
+        "json_attributes",
     ]
     deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)

@@ -6,6 +6,7 @@ from deeplake.core.vectorstore.deeplake_vectorstore import VectorStore
 from jet.llm.ollama.constants import OLLAMA_LARGE_EMBED_MODEL
 from jet.llm.ollama.embeddings import get_ollama_embedding_function
 from jet.llm.utils.llama_index_utils import display_jet_source_nodes
+from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
 from llama_index.core.schema import NodeWithScore, TextNode
 import requests
 from tqdm import tqdm
@@ -49,7 +50,7 @@ mode: Literal["fusion", "hierarchy",
 store_path: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/.cache/deeplake/store_1"
 score_threshold: float = 0.0
 split_mode: list[Literal["markdown", "hierarchy"]] = []
-
+fusion_mode: FUSION_MODES = FUSION_MODES.RELATIVE_SCORE
 contexts: list[str] = []
 
 
@@ -72,6 +73,7 @@ class QueryRequest(BaseModel):
     store_path: str = store_path
     score_threshold: float = score_threshold
     split_mode: list[Literal["markdown", "hierarchy"]] = split_mode
+    fusion_mode: FUSION_MODES = fusion_mode
 
 
 class SearchRequest(QueryRequest):
@@ -143,16 +145,7 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
 
     # Generate hash for the current set of arguments
     deps = [
-        "system",
-        "chunk_size",
-        "chunk_overlap",
-        "sub_chunk_sizes",
-        "with_hierarchy",
-        "embed_model",
         "mode",
-        "store_path",
-        "split_mode",
-        "json_attributes",
     ]
     deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)
@@ -254,6 +247,7 @@ async def query(
         query=query,
         rag_dir=rag_dir,
         extensions=extensions,
+        json_attributes=json_attributes,
         system=system,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
@@ -266,6 +260,7 @@ async def query(
         store_path=store_path,
         score_threshold=score_threshold,
         split_mode=split_mode,
+        fusion_mode=fusion_mode,
         contexts=contexts,
     )
     return StreamingResponse(event_stream_query(search_request), headers=headers)
@@ -310,13 +305,12 @@ async def query_stop():
 async def get_nodes(query_request: QueryRequest):
     query_request_dict = query_request.__dict__.copy()
     query = query_request_dict.pop("query")
-    top_k = query_request.top_k
 
     rag = setup_rag(
         **query_request_dict
     )
 
-    result = rag.get_results(query, top_k=top_k)
+    result = rag.get_results(query, **query_request_dict)
 
     data = NodesResponse.from_nodes(result["nodes"])
 

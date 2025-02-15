@@ -28,8 +28,8 @@ router = APIRouter()
 rag_global_dict: dict[str, object] = {}
 
 rag_dir: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/data/jet-resume/data"
-extensions: list[str] = [".md", ".mdx", ".rst", ".json"]
-json_attributes: list[str] = []
+json_attributes: list[str] = ["details"]
+extensions: list[str] = [".md", ".mdx", ".rst"]
 system: str = (
     "You are a job applicant providing tailored responses during an interview.\n"
     "Always answer questions using the provided context as if it is your resume, "
@@ -50,7 +50,7 @@ mode: Literal["fusion", "hierarchy",
 store_path: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/.cache/deeplake/store_1"
 score_threshold: float = 0.0
 split_mode: list[Literal["markdown", "hierarchy"]] = []
-fusion_mode: FUSION_MODES = FUSION_MODES.RELATIVE_SCORE
+fusion_mode: FUSION_MODES = FUSION_MODES.SIMPLE
 contexts: list[str] = []
 
 
@@ -80,17 +80,15 @@ class SearchRequest(QueryRequest):
     contexts: list[str] = contexts
 
 
-class Node(BaseModel):
+class VectorNode(BaseModel):
     id: str
     score: float
-    text_length: int
-    start_end: list[int]
     text: str
     metadata: Optional[dict] = None
 
 
-class NodesResponse(BaseModel):
-    data: list[Node]
+class VectorNodesResponse(BaseModel):
+    data: list[VectorNode]
 
     @classmethod
     def from_nodes(cls, nodes: list):
@@ -146,6 +144,7 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
     # Generate hash for the current set of arguments
     deps = [
         "mode",
+        "json_attributes",
     ]
     deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)
@@ -301,7 +300,7 @@ async def query_stop():
     logger.purple("Response:", response)
 
 
-@router.post("/nodes", response_model=NodesResponse)
+@router.post("/nodes", response_model=VectorNodesResponse)
 async def get_nodes(query_request: QueryRequest):
     query_request_dict = query_request.__dict__.copy()
     query = query_request_dict.pop("query")
@@ -312,12 +311,12 @@ async def get_nodes(query_request: QueryRequest):
 
     result = rag.get_results(query, **query_request_dict)
 
-    data = NodesResponse.from_nodes(result["nodes"])
+    data = VectorNodesResponse.from_nodes(result["nodes"])
 
     return data
 
 
-@router.post("/stream-nodes", response_model=NodesResponse)
+@router.post("/stream-nodes", response_model=VectorNodesResponse)
 async def stream_nodes(query_request: QueryRequest):
     headers = {
         "Cache-Control": "no-cache",
@@ -343,7 +342,7 @@ def event_stream_nodes(query_request: QueryRequest) -> Generator[str, None, None
         result = rag.get_results(
             prompt, top_k=top_k)
 
-        transformed_nodes = NodesResponse.from_nodes(result["nodes"])
+        transformed_nodes = VectorNodesResponse.from_nodes(result["nodes"])
         yield f"data: {transformed_nodes}\n\n"
 
         logger.debug("Result Prompt:", prompt)

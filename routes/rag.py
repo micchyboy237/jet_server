@@ -26,7 +26,7 @@ from config import stop_event
 router = APIRouter()
 
 # Create default RAG instance (will be updated in the endpoint)
-rag_global_dict = LRUCache(max_size=5)
+rag_global_dict = LRUCache(max_size=7)
 
 rag_dir: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/data/jet-resume/data"
 json_attributes: list[str] = ["details"]

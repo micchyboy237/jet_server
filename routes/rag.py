@@ -104,7 +104,7 @@ class VectorNodesResponse(BaseModel):
         return cls(data=transformed_nodes)
 
 
-def setup_rag(rag_dir: str, **kwargs) -> RAG:
+def setup_rag(**kwargs) -> RAG:
     """
     Setup a RAG object and store it in a global dictionary with a unique mode.
 
@@ -122,14 +122,16 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
         raise ValueError("The 'mode' key must be provided in kwargs.")
 
     # Dependencies for hash computation
-    deps = ["embed_model", "json_attributes", "chunk_size", "chunk_overlap"]
+    deps = ["path_or_docs", "embed_model",
+            "json_attributes", "chunk_size", "chunk_overlap"]
     deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)
 
     # Check if cache needs to be cleared due to changed dependencies
-    if any(key in kwargs and kwargs[key] != rag_global_dict.get("last_" + key) for key in ["path_or_docs", "embed_model"]):
+    if any(key in kwargs and kwargs[key] != rag_global_dict.get("last_" + key)
+           for key in deps):
         logger.warning(
-            "Detected change in 'path_or_docs' or 'embed_model'. Clearing RAG cache.")
+            f"Detected change in {", ".join(deps)}. Clearing RAG cache.")
         rag_global_dict.clear()
 
     # Check if RAG with the same mode and hash already exists
@@ -139,10 +141,10 @@ def setup_rag(rag_dir: str, **kwargs) -> RAG:
         return existing_entry["rag"]
 
     # Initialize the RAG object
-    rag = RAG(path_or_docs=rag_dir, **kwargs)
+    rag = RAG(**kwargs)
 
     # Store the latest values for comparison
-    rag_global_dict.put("last_path_or_docs", rag_dir)
+    rag_global_dict.put("last_path_or_docs", kwargs.get("path_or_docs"))
     rag_global_dict.put("last_embed_model", kwargs.get("embed_model"))
 
     # Cache the new RAG object
@@ -248,8 +250,8 @@ def event_stream_query(search_request: SearchRequest):
     top_k = search_request.top_k
 
     rag = setup_rag(
-        search_request_dict.pop("rag_dir"),
         system=system,
+        path_or_docs=search_request_dict.pop("rag_dir"),
         **search_request_dict
     )
 
@@ -282,7 +284,7 @@ async def get_nodes(query_request: QueryRequest):
     query = query_request_dict.pop("query")
 
     rag = setup_rag(
-        query_request_dict.pop("rag_dir"),
+        path_or_docs=query_request_dict.pop("rag_dir"),
         **query_request_dict
     )
 
@@ -310,7 +312,7 @@ def event_stream_nodes(query_request: QueryRequest) -> Generator[str, None, None
     top_k = query_request.top_k
 
     rag = setup_rag(
-        query_request_dict.pop("rag_dir"),
+        path_or_docs=query_request_dict.pop("rag_dir"),
         **query_request_dict
     )
 

@@ -16,14 +16,6 @@ router = APIRouter()
 VECTOR_STORE_PATH = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/llm/semantic_search/generated/deeplake/store_1"
 EMBEDDING_FUNCTION = get_ollama_embedding_function("mxbai-embed-large")
 
-# Initialize VectorStore
-vector_store = VectorStore(
-    path=VECTOR_STORE_PATH,
-    read_only=True
-)
-
-# Request model
-
 
 class SearchRequest(BaseModel):
     query: str
@@ -40,6 +32,12 @@ class SearchResult(BaseModel):
 
 @router.post("/search", response_model=List[SearchResult])
 def search_vector_store(request: SearchRequest):
+    # Initialize VectorStore
+    vector_store = VectorStore(
+        path=VECTOR_STORE_PATH,
+        read_only=True
+    )
+
     try:
         logger.info("Received search query")
         logger.debug(format_json(request))

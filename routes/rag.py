@@ -1,7 +1,6 @@
 import json
 import time
 from typing import Any, Awaitable, Generator, Literal, Optional
-from deeplake.core.vectorstore.deeplake_vectorstore import VectorStore
 from jet.llm.ollama.constants import OLLAMA_LARGE_EMBED_MODEL
 from jet.llm.ollama.embeddings import get_ollama_embedding_function
 from jet.llm.utils.llama_index_utils import display_jet_source_nodes
@@ -89,11 +88,13 @@ class VectorNode(BaseModel):
 
 
 class VectorNodesResponse(BaseModel):
+    count: int  # Add count to track the number of nodes
     data: list[VectorNode]
 
     @classmethod
-    def from_nodes(cls, nodes: list):
-        # Transform the nodes, changing 'node_id' to 'id'
+    def from_nodes(cls, nodes: list[dict]):
+        """Transform the nodes, changing 'node_id' to 'id'."""
+        # Transform nodes
         transformed_nodes = [
             {
                 **get_source_node_attributes(node),
@@ -101,7 +102,8 @@ class VectorNodesResponse(BaseModel):
             }
             for node in nodes
         ]
-        return cls(data=transformed_nodes)
+        # Return the response with both count and data
+        return cls(count=len(transformed_nodes), data=transformed_nodes)
 
 
 def setup_rag(**kwargs) -> RAG:

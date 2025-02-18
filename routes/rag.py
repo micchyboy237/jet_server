@@ -29,6 +29,8 @@ rag_global_dict = LRUCache(max_size=7)
 
 rag_dir: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/data/jet-resume/data"
 json_attributes: list[str] = ["details"]
+exclude_json_attributes: list[str] = ["overview"]
+metadata_attributes: list[str] = []
 extensions: list[str] = [".md", ".mdx", ".rst"]
 system: str = (
     "You are a job applicant providing tailored responses during an interview.\n"
@@ -60,6 +62,8 @@ class QueryRequest(BaseModel):
     rag_dir: str = rag_dir
     extensions: list[str] = extensions
     json_attributes: list[str] = json_attributes
+    exclude_json_attributes: list[str] = exclude_json_attributes
+    metadata_attributes: list[str] = metadata_attributes
     system: str = system
     chunk_size: int = chunk_size
     chunk_overlap: int = chunk_overlap
@@ -125,7 +129,8 @@ def setup_rag(**kwargs) -> RAG:
 
     # Dependencies for hash computation
     deps = ["path_or_docs", "embed_model",
-            "json_attributes", "chunk_size", "chunk_overlap"]
+            "json_attributes", "exclude_json_attributes", "metadata_attributes",
+            "chunk_size", "chunk_overlap"]
     deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)
 
@@ -226,6 +231,8 @@ async def query(
         rag_dir=rag_dir,
         extensions=extensions,
         json_attributes=json_attributes,
+        exclude_json_attributes=exclude_json_attributes,
+        metadata_attributes=metadata_attributes,
         system=system,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,

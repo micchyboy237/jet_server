@@ -8,7 +8,7 @@ from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
 from llama_index.core.schema import NodeWithScore, TextNode
 import requests
 from tqdm import tqdm
-from jet.llm.main.prompts_generator import PromptsGenerator
+from jet.actions.prompts_generator import PromptsGenerator
 from jet.llm.ollama.base import Ollama
 from jet.transformers.formatters import format_json
 from pydantic import BaseModel

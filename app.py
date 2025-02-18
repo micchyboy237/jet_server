@@ -50,6 +50,7 @@ app.include_router(graph_router, prefix="/api/v1/graph", tags=["graph"])
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="127.0.0.1", port=8002, reload=True, reload_dirs=[
-        "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules"
-    ])
+    # uvicorn.run("app:app", host="0.0.0.0", port=8002, reload=True, reload_dirs=[
+    #     "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules"
+    # ])
+    uvicorn.run("app:app", host="0.0.0.0", port=8002)

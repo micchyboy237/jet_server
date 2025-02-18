@@ -3,8 +3,8 @@ from fastapi import APIRouter, HTTPException
 from jet.transformers.formatters import format_json
 from pydantic import BaseModel
 from jet.llm.ollama.base import Ollama
-from jet.llm.main.prompts_generator import PromptsGenerator
-from jet.llm.main.autocomplete_prompts_generator import AutocompletePromptsGenerator
+from jet.actions.prompts_generator import PromptsGenerator
+from jet.actions.autocomplete_prompts_generator import AutocompletePromptsGenerator
 from jet.logger import logger
 from starlette.responses import StreamingResponse
 from tqdm import tqdm

@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.routing import APIRouter
 from pydantic import BaseModel
 from typing import List, Dict
-from deeplake.core.vectorstore import VectorStore
+
 from jet.llm.ollama.embeddings import get_ollama_embedding_function
 from jet.llm.utils.llama_index_utils import display_jet_source_nodes
 from jet.logger import logger
@@ -32,6 +32,8 @@ class SearchResult(BaseModel):
 
 @router.post("/search", response_model=List[SearchResult])
 def search_vector_store(request: SearchRequest):
+    from deeplake.core.vectorstore import VectorStore
+
     # Initialize VectorStore
     vector_store = VectorStore(
         path=VECTOR_STORE_PATH,

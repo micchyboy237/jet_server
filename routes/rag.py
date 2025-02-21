@@ -25,11 +25,11 @@ from config import stop_event
 router = APIRouter()
 
 # Create default RAG instance (will be updated in the endpoint)
-rag_global_dict = LRUCache(max_size=7)
+rag_global_dict = LRUCache(max_size=5)
 
 rag_dir: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/data/jet-resume/data"
-json_attributes: list[str] = ["details"]
-exclude_json_attributes: list[str] = ["overview"]
+json_attributes: list[str] = ["title", "details"]
+exclude_json_attributes: list[str] = []
 metadata_attributes: list[str] = []
 extensions: list[str] = [".md", ".mdx", ".rst"]
 system: str = (
@@ -134,11 +134,10 @@ def setup_rag(**kwargs) -> RAG:
     deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)
 
-    # Check if cache needs to be cleared due to changed dependencies
-    if any(key in kwargs and kwargs[key] != rag_global_dict.get("last_" + key)
-           for key in deps):
-        logger.warning(
-            f"Detected change in {", ".join(deps)}. Clearing RAG cache.")
+    # Check if cache needs to be cleared due to changed hash
+    last_hash = rag_global_dict.get("last_hash")
+    if last_hash and last_hash != current_hash:
+        logger.warning("Detected change in dependencies. Clearing RAG cache.")
         rag_global_dict.clear()
 
     # Check if RAG with the same mode and hash already exists
@@ -150,9 +149,8 @@ def setup_rag(**kwargs) -> RAG:
     # Initialize the RAG object
     rag = RAG(**kwargs)
 
-    # Store the latest values for comparison
-    rag_global_dict.put("last_path_or_docs", kwargs.get("path_or_docs"))
-    rag_global_dict.put("last_embed_model", kwargs.get("embed_model"))
+    # Store the latest hash for comparison
+    rag_global_dict.put("last_hash", current_hash)
 
     # Cache the new RAG object
     rag_global_dict.put(current_hash, {

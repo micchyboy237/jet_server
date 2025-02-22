@@ -48,7 +48,7 @@ top_k: Optional[int] = None
 model: str = "llama3.2"
 embed_model: str = OLLAMA_LARGE_EMBED_MODEL
 mode: Literal["annoy", "fusion", "bm25", "hierarchy",
-              "deeplake", "faiss", "graph_nx"] = "annoy"
+              "deeplake", "faiss", "graph_nx"] = "fusion"
 store_path: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/.cache/deeplake/store_1"
 score_threshold: float = 0.0
 split_mode: list[Literal["markdown", "hierarchy"]] = []

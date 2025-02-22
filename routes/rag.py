@@ -47,8 +47,8 @@ with_hierarchy: bool = True
 top_k: Optional[int] = None
 model: str = "llama3.2"
 embed_model: str = OLLAMA_LARGE_EMBED_MODEL
-mode: Literal["fusion", "hierarchy",
-              "deeplake", "faiss", "graph_nx"] = "fusion"
+mode: Literal["annoy", "fusion", "bm25", "hierarchy",
+              "deeplake", "faiss", "graph_nx"] = "annoy"
 store_path: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/.cache/deeplake/store_1"
 score_threshold: float = 0.0
 split_mode: list[Literal["markdown", "hierarchy"]] = []
@@ -72,7 +72,7 @@ class QueryRequest(BaseModel):
     top_k: Optional[int] = top_k
     model: str = model
     embed_model: str = embed_model
-    mode: Literal["fusion", "hierarchy",
+    mode: Literal["annoy", "fusion", "bm25", "hierarchy",
                   "deeplake", "faiss", "graph_nx"] = mode
     store_path: str = store_path
     score_threshold: float = score_threshold
@@ -128,7 +128,7 @@ def setup_rag(**kwargs) -> RAG:
         raise ValueError("The 'mode' key must be provided in kwargs.")
 
     # Dependencies for hash computation
-    deps = ["path_or_docs", "embed_model",
+    deps = ["path_or_docs", "mode", "embed_model",
             "json_attributes", "exclude_json_attributes", "metadata_attributes",
             "chunk_size", "chunk_overlap"]
     deps_values = [kwargs[key] for key in deps if key in kwargs]
@@ -206,7 +206,7 @@ async def query(
     top_k: Optional[int] = Query(default=top_k),
     model: str = Query(default=model),
     embed_model: str = Query(default=embed_model),
-    mode: Literal["fusion", "hierarchy",
+    mode: Literal["annoy", "fusion", "bm25", "hierarchy",
                   "deeplake", "faiss", "graph_nx"] = Query(default=mode),
     store_path: str = Query(default=store_path),
     score_threshold: float = Query(default=score_threshold),

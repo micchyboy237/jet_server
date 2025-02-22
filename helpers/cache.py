@@ -56,6 +56,10 @@ class LRUCache:
         """Return a view of the cache's items (key-value pairs)."""
         return self.cache.items()
 
+    def __iter__(self):
+        """Allow iteration over the cache keys."""
+        return iter(self.cache)
+
 
 # Example Usage
 if __name__ == "__main__":

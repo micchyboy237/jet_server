@@ -2,7 +2,7 @@ import json
 import time
 from typing import Any, Awaitable, Generator, Literal, Optional
 from jet.llm.ollama.constants import OLLAMA_LARGE_EMBED_MODEL
-from jet.llm.ollama.embeddings import get_ollama_embedding_function
+from jet.llm.utils.embeddings import get_ollama_embedding_function
 from jet.llm.utils.llama_index_utils import display_jet_source_nodes
 from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
 from llama_index.core.schema import NodeWithScore, TextNode

@@ -52,11 +52,21 @@ def get_unique_entities(entities: List[Dict]) -> List[Dict]:
             best_entities[key] = entity
     return list(best_entities.values())
 
+
+def extract_entities_from_text(nlp, text: str) -> List[Dict]:
+    doc = nlp(text)
+    return get_unique_entities([
+        {
+            "text": merge_dot_prefixed_words(entity.text),
+            "label": entity.label_,
+            "score": float(entity._.score)
+        } for entity in doc.ents
+    ])
+
 # Request Models
 
 
 class TextRequest(BaseModel):
-    id: str
     text: str
 
 
@@ -65,6 +75,14 @@ class ProcessRequest(BaseModel):
     labels: List[str]
     style: str = "ent"
     data: List[TextRequest]
+    chunk_size: int = 250
+
+
+class SingleTextRequest(BaseModel):
+    text: str
+    model: str = "urchade/gliner_small-v2.1"
+    labels: List[str] = []
+    style: str = "ent"
     chunk_size: int = 250
 
 # Response Models
@@ -77,13 +95,19 @@ class Entity(BaseModel):
 
 
 class ProcessedTextResponse(BaseModel):
-    id: str
     text: str
     entities: List[Entity]
 
 
 class ProcessResponse(BaseModel):
-    results: List[ProcessedTextResponse]
+    data: List[ProcessedTextResponse]
+
+
+@router.post("/extract-entity", response_model=List[Entity])
+def extract_entity(request: SingleTextRequest):
+    nlp = load_nlp_pipeline(request.model, request.labels,
+                            request.style, request.chunk_size)
+    return extract_entities_from_text(nlp, request.text)
 
 
 @router.post("/extract-entities", response_model=ProcessResponse)
@@ -93,15 +117,8 @@ def extract_entities(request: ProcessRequest):
                             request.style, request.chunk_size)
 
     for item in request.data:
-        doc = nlp(item.text)
-        entities = get_unique_entities([
-            {
-                "text": merge_dot_prefixed_words(entity.text),
-                "label": entity.label_,
-                "score": float(entity._.score)
-            } for entity in doc.ents
-        ])
+        entities = extract_entities_from_text(nlp, item.text)
         results.append(ProcessedTextResponse(
-            id=item.id, text=item.text, entities=entities))
+            text=item.text, entities=entities))
 
-    return ProcessResponse(results=results)
+    return ProcessResponse(data=results)

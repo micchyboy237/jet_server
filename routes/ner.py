@@ -1,15 +1,15 @@
-from fastapi import APIRouter
+from pathlib import Path
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import List
 from jet.vectors.ner import load_nlp_pipeline, extract_entities_from_text
+import json
 
 router = APIRouter()
 
-# Global cache for storing the loaded pipeline
-nlp_cache = None
-
-
 # Request Models
+
 
 class TextRequest(BaseModel):
     text: str
@@ -39,13 +39,59 @@ class Entity(BaseModel):
     score: float
 
 
+class LoadEntitiesResult(BaseModel):
+    id: str
+    text: str
+    entities: List[Entity]
+
+
+class LoadEntitiesResponse(BaseModel):
+    model: str
+    labels: List[str]
+    data: List[LoadEntitiesResult]
+
+
 class ProcessedTextResponse(BaseModel):
     text: str
     entities: List[Entity]
 
 
-class ProcessResponse(BaseModel):
-    data: List[ProcessedTextResponse]
+@router.get("/entities", response_model=LoadEntitiesResponse)
+def load_entities(file: str):
+    """Loads entities from a specified JSON file."""
+    try:
+        # Load the content of the file
+        file_path = Path(file)
+        if not file_path.is_file():
+            raise HTTPException(status_code=404, detail="File not found")
+
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        # Prepare response in the required format
+        response = {
+            "model": data["model"],
+            "labels": data["labels"],
+            "count": len(data["results"]),
+            "data": data["results"]
+        }
+
+        return response
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error processing file: {str(e)}")
+
+
+async def entity_generator(request: ProcessRequest):
+    nlp = load_nlp_pipeline(request.model, request.labels,
+                            request.style, request.chunk_size)
+
+    for item in request.data:
+        entities = extract_entities_from_text(nlp, item.text)
+        response_data = ProcessedTextResponse(
+            text=item.text, entities=entities)
+        yield json.dumps(response_data.dict()) + "\n"
 
 
 @router.post("/extract-entity", response_model=List[Entity])
@@ -55,15 +101,6 @@ def extract_entity(request: SingleTextRequest):
     return extract_entities_from_text(nlp, request.text)
 
 
-@router.post("/extract-entities", response_model=ProcessResponse)
+@router.post("/extract-entities")
 def extract_entities(request: ProcessRequest):
-    results = []
-    nlp = load_nlp_pipeline(request.model, request.labels,
-                            request.style, request.chunk_size)
-
-    for item in request.data:
-        entities = extract_entities_from_text(nlp, item.text)
-        results.append(ProcessedTextResponse(
-            text=item.text, entities=entities))
-
-    return ProcessResponse(data=results)
+    return StreamingResponse(entity_generator(request), media_type="application/json")

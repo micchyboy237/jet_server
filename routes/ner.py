@@ -1,21 +1,73 @@
-import json
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
-from jet.vectors.ner import extract_named_entities
 from typing import List, Dict
-from pathlib import Path
+import spacy
+import uvicorn
 
 router = APIRouter()
 
-# Assuming the NER_MODEL, NER_LABELS, NER_STYLE constants are imported from jet.vectors.ner
+# Global cache for storing the loaded pipeline
+nlp_cache = None
+
+
+def load_nlp_pipeline(model: str, labels: List[str], style: str, chunk_size: int):
+    global nlp_cache
+    if nlp_cache is None:
+        custom_spacy_config = {
+            "gliner_model": model,
+            "chunk_size": chunk_size,
+            "labels": labels,
+            "style": style
+        }
+        nlp_cache = spacy.blank("en")
+        nlp_cache.add_pipe("gliner_spacy", config=custom_spacy_config)
+    return nlp_cache
+
+
+def merge_dot_prefixed_words(text: str) -> str:
+    tokens = text.split()
+    merged_tokens = []
+    for i, token in enumerate(tokens):
+        if token.startswith(".") and merged_tokens and not merged_tokens[-1].startswith("."):
+            merged_tokens[-1] += token
+        elif merged_tokens and merged_tokens[-1].endswith("."):
+            merged_tokens[-1] += token
+        else:
+            merged_tokens.append(token)
+    return " ".join(merged_tokens)
+
+
+def get_unique_entities(entities: List[Dict]) -> List[Dict]:
+    best_entities = {}
+    for entity in entities:
+        text = entity["text"]
+        words = [t.replace(" ", "") for t in text.split(" ") if t]
+        normalized_text = " ".join(words)
+        label = entity["label"]
+        score = float(entity["score"])
+        entity["text"] = normalized_text
+        key = f"{label}-{str(normalized_text)}"
+        if key not in best_entities or score > float(best_entities[key]["score"]):
+            entity["score"] = score
+            best_entities[key] = entity
+    return list(best_entities.values())
+
+# Request Models
 
 
 class TextRequest(BaseModel):
+    id: str
     text: str
-    model: str = "urchade/gliner_small-v2.1"  # default model value
-    style: str = "default"  # adjust as needed
-    labels: List[str] = ["role", "application",
-                         "technology stack", "qualifications"]  # default labels
+
+
+class ProcessRequest(BaseModel):
+    model: str = "urchade/gliner_small-v2.1"
+    labels: List[str]
+    style: str = "ent"
+    data: List[TextRequest]
+    chunk_size: int = 250
+
+# Response Models
 
 
 class Entity(BaseModel):
@@ -24,51 +76,32 @@ class Entity(BaseModel):
     score: float
 
 
-class Result(BaseModel):
+class ProcessedTextResponse(BaseModel):
     id: str
     text: str
     entities: List[Entity]
 
 
-class LoadEntitiesResponse(BaseModel):
-    model: str
-    labels: List[str]
-    data: List[Result]
+class ProcessResponse(BaseModel):
+    results: List[ProcessedTextResponse]
 
 
-@router.get("/entities", response_model=LoadEntitiesResponse)
-def load_entities(file: str):
-    """Loads entities from a specified JSON file."""
-    try:
-        # Load the content of the file
-        file_path = Path(file)
-        if not file_path.is_file():
-            raise HTTPException(status_code=404, detail="File not found")
+@router.post("/extract-entities", response_model=ProcessResponse)
+def extract_entities(request: ProcessRequest):
+    results = []
+    nlp = load_nlp_pipeline(request.model, request.labels,
+                            request.style, request.chunk_size)
 
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
+    for item in request.data:
+        doc = nlp(item.text)
+        entities = get_unique_entities([
+            {
+                "text": merge_dot_prefixed_words(entity.text),
+                "label": entity.label_,
+                "score": float(entity._.score)
+            } for entity in doc.ents
+        ])
+        results.append(ProcessedTextResponse(
+            id=item.id, text=item.text, entities=entities))
 
-        # Prepare response in the required format
-        response = {
-            "model": data["model"],
-            "labels": data["labels"],
-            "count": len(data["results"]),
-            "data": data["results"]
-        }
-
-        return response
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error processing file: {str(e)}")
-
-
-@router.post("/extract-entities")
-def extract_entities(request: TextRequest):
-    """API endpoint to extract named entities from the provided text."""
-    if not request.text.strip():
-        raise HTTPException(status_code=400, detail="Text cannot be empty")
-
-    # Assuming extract_named_entities is properly defined to extract entities from the provided text
-    entities = extract_named_entities([request.text])
-    return {"data": entities}
+    return ProcessResponse(results=results)

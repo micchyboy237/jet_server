@@ -81,7 +81,7 @@ class ProcessRequest(BaseModel):
 class SingleTextRequest(BaseModel):
     text: str
     model: str = "urchade/gliner_small-v2.1"
-    labels: List[str] = []
+    labels: List[str]
     style: str = "ent"
     chunk_size: int = 250
 

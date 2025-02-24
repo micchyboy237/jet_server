@@ -63,8 +63,8 @@ def extract_entities_from_text(nlp, text: str) -> List[Dict]:
         } for entity in doc.ents
     ])
 
-# Request Models
 
+# Request Models
 
 class TextRequest(BaseModel):
     text: str
@@ -85,8 +85,8 @@ class SingleTextRequest(BaseModel):
     style: str = "ent"
     chunk_size: int = 250
 
-# Response Models
 
+# Response Models
 
 class Entity(BaseModel):
     text: str

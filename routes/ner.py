@@ -6,6 +6,8 @@ from typing import List
 from jet.vectors.ner import load_nlp_pipeline, extract_entities_from_text
 import json
 
+from shared.data_types.job import Entity, JobEntity
+
 router = APIRouter()
 
 # Request Models
@@ -33,11 +35,6 @@ class SingleTextRequest(BaseModel):
 
 # Response Models
 
-class Entity(BaseModel):
-    text: str
-    label: str
-    score: float
-
 
 class LoadEntitiesResult(BaseModel):
     id: str
@@ -52,8 +49,8 @@ class LoadEntitiesResponse(BaseModel):
 
 
 class ProcessedTextResponse(BaseModel):
+    entities: JobEntity
     text: str
-    entities: List[Entity]
 
 
 @router.get("/entities", response_model=LoadEntitiesResponse)
@@ -94,7 +91,7 @@ async def entity_generator(request: ProcessRequest):
         yield json.dumps(response_data.dict()) + "\n"
 
 
-@router.post("/extract-entity", response_model=List[Entity])
+@router.post("/extract-entity", response_model=JobEntity)
 def extract_entity(request: SingleTextRequest):
     nlp = load_nlp_pipeline(request.model, request.labels,
                             request.style, request.chunk_size)

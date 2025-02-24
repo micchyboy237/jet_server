@@ -40,7 +40,7 @@ system: str = (
     "1. Never directly mention the context or say 'According to my resume' or similar phrases.\n"
     "2. Provide responses as if you are the individual described in the context, focusing on professionalism and relevance."
 )
-chunk_size: int = 1024
+chunk_size: Optional[int] = None
 chunk_overlap: int = 40
 sub_chunk_sizes: list[int] = [512, 256, 128]
 with_hierarchy: bool = True
@@ -54,6 +54,7 @@ score_threshold: float = 0.0
 split_mode: list[Literal["markdown", "hierarchy"]] = []
 fusion_mode: FUSION_MODES = FUSION_MODES.SIMPLE
 contexts: list[str] = []
+disable_chunking: Optional[bool] = False
 
 
 # Define the schema for input queries
@@ -65,7 +66,7 @@ class QueryRequest(BaseModel):
     exclude_json_attributes: list[str] = exclude_json_attributes
     metadata_attributes: list[str] = metadata_attributes
     system: str = system
-    chunk_size: int = chunk_size
+    chunk_size: Optional[int] = chunk_size
     chunk_overlap: int = chunk_overlap
     sub_chunk_sizes: list[int] = sub_chunk_sizes
     with_hierarchy: bool = with_hierarchy
@@ -78,6 +79,7 @@ class QueryRequest(BaseModel):
     score_threshold: float = score_threshold
     split_mode: list[Literal["markdown", "hierarchy"]] = split_mode
     fusion_mode: FUSION_MODES = fusion_mode
+    disable_chunking: Optional[bool] = False
 
 
 class SearchRequest(QueryRequest):
@@ -130,7 +132,7 @@ def setup_rag(**kwargs) -> RAG:
     # Dependencies for hash computation
     deps = ["path_or_docs", "mode", "embed_model",
             "json_attributes", "exclude_json_attributes", "metadata_attributes",
-            "chunk_size", "chunk_overlap"]
+            "chunk_size", "chunk_overlap", "disable_chunking"]
     deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)
 

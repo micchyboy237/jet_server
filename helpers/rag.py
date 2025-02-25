@@ -58,6 +58,9 @@ class RAG:
         self.last_modified: Optional[float] = None
         self.query_nodes: Optional[Callable] = None
 
+        self._check_documents_cache()
+
+    def _check_documents_cache(self):
         self.documents = self._load_documents()
 
     def _load_documents(self) -> list[Document]:
@@ -75,19 +78,20 @@ class RAG:
                 documents = load_documents(
                     self.path_or_docs, **self.setup_args)
 
-                self._check_documents_cache(documents)
+                self._setup_query_callback(documents)
 
                 self.last_modified = current_modified
                 _active_search_documents.put(
                     str(self.last_modified), documents)
             else:
-                return _active_search_documents.get(str(self.last_modified))
+                documents = _active_search_documents.get(
+                    str(self.last_modified))
 
         elif isinstance(self.path_or_docs, list):
             documents = self.path_or_docs
         return documents
 
-    def _check_documents_cache(self, documents: list[Document]):
+    def _setup_query_callback(self, documents: list[Document]):
         if self.mode in ["faiss", "graph_nx"]:
             self.query_nodes = setup_semantic_search(
                 documents,
@@ -104,6 +108,8 @@ class RAG:
     def query(self, query: str, contexts: list[str] = [], system: Optional[str] = None, stop_event: Optional[threading.Event] = None, **kwargs) -> str | Generator[str, None, None]:
         from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
 
+        self._check_documents_cache()
+
         if not contexts:
             result = self.query_nodes(
                 query, **self.setup_args)
@@ -114,6 +120,8 @@ class RAG:
 
     def get_results(self, query: str, **kwargs) -> str | Generator[str, None, None]:
         from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
+
+        self._check_documents_cache()
 
         options = {
             "query": query,

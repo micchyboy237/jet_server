@@ -4,6 +4,7 @@ from typing import Any, Awaitable, Generator, Literal, Optional
 from jet.llm.ollama.constants import OLLAMA_LARGE_EMBED_MODEL
 from jet.llm.utils.embeddings import get_ollama_embedding_function
 from jet.llm.utils.llama_index_utils import display_jet_source_nodes
+from jet.memory.lru_cache import LRUCache
 from llama_index.core.retrievers.fusion_retriever import FUSION_MODES
 from llama_index.core.schema import NodeWithScore, TextNode
 import requests
@@ -18,7 +19,6 @@ from jet.vectors import get_source_node_attributes
 from jet.logger import logger
 
 from helpers.rag import RAG
-from helpers.cache import LRUCache
 from utils.data import generate_key
 from config import stop_event
 

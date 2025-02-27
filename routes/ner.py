@@ -11,6 +11,9 @@ from shared.data_types.job import Entity, JobEntity
 router = APIRouter()
 
 # Request Models
+NER_MODEL = "urchade/gliner_small-v2.1"
+# NER_MODEL = "urchade/gliner_medium-v2.1"
+NER_STYLE = "ent"
 
 
 class TextRequest(BaseModel):
@@ -18,18 +21,18 @@ class TextRequest(BaseModel):
 
 
 class ProcessRequest(BaseModel):
-    model: str = "urchade/gliner_small-v2.1"
+    model: str = NER_MODEL
     labels: List[str]
-    style: str = "ent"
+    style: str = NER_STYLE
     data: List[TextRequest]
     chunk_size: int = 250
 
 
 class SingleTextRequest(BaseModel):
     text: str
-    model: str = "urchade/gliner_small-v2.1"
+    model: str = NER_MODEL
     labels: List[str]
-    style: str = "ent"
+    style: str = NER_STYLE
     chunk_size: int = 250
 
 

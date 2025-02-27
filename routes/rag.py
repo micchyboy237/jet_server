@@ -130,8 +130,7 @@ def setup_rag(**kwargs) -> RAG:
         raise ValueError("The 'mode' key must be provided in kwargs.")
 
     # Dependencies for hash computation
-    deps = ["path_or_docs", "mode", "embed_model",
-            "json_attributes", "exclude_json_attributes", "metadata_attributes",
+    deps = ["path_or_docs", "json_attributes", "exclude_json_attributes", "metadata_attributes",
             "chunk_size", "chunk_overlap", "disable_chunking"]
     deps_values = [kwargs[key] for key in deps if key in kwargs]
     current_hash = generate_key(*deps_values)

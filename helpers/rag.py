@@ -111,8 +111,12 @@ class RAG:
         self._check_documents_cache()
 
         if not contexts:
-            result = self.query_nodes(
-                query, **self.setup_args)
+            options = {
+                "query": query,
+                **self.setup_args,
+                **kwargs,
+            }
+            result = self.query_nodes(**options)
             contexts = result['texts']
             contexts = remove_substrings(contexts)
 
@@ -125,7 +129,8 @@ class RAG:
 
         options = {
             "query": query,
-            **self.setup_args
+            **self.setup_args,
+            **kwargs,
         }
 
         result = self.query_nodes(**options)

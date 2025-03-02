@@ -29,10 +29,8 @@ exclude_files = [
     "jupyter",
 ]
 include_files = [
-    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/app.py",
-    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/routes/graph.py",
-    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/memory/memgraph.py",
-    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/memory/memgraph_types.py",
+    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/routes/rag.py",
+    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/helpers/rag.py",
 ]
 structure_include = [
     # "*.py"
@@ -50,14 +48,7 @@ DEFAULT_SYSTEM_MESSAGE = """
 """.strip()
 
 DEFAULT_QUERY_MESSAGE = """
-Resolve issue when calling POST - http://0.0.0.0:8002/api/v1/graph/query-graph endpoint:
-  File "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 176, in serialize_response
-    raise ResponseValidationError(
-fastapi.exceptions.ResponseValidationError: 3 validation errors:
-  {'type': 'string_type', 'loc': ('response', 'data', 'records', 0, 'path', 'id'), 'msg': 'Input should be a valid string', 'input': 9210}
-  {'type': 'missing', 'loc': ('response', 'data', 'records', 0, 'path', 'nodes'), 'msg': 'Field required', 'input': {'id': 9210, 'labels': ['__mg__', 'User'], 'properties': {'__mg_id__': 1}, 'type': 'node'}}
-  {'type': 'missing', 'loc': ('response', 'data', 'records', 0, 'path', 'relationships'), 'msg': 'Field required', 'input': {'id': 9210, 'labels': ['__mg__', 'User'], 'properties': {'__mg_id__': 1}, 'type': 'node'}}
-
+Move out the _check_documents_cache logic 
 """.strip()
 
 # Project specific

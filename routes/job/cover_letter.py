@@ -84,13 +84,18 @@ class JobCoverLetter(BaseModel):
     message: str
 
 
+class CoverLetterRequest(BaseModel):
+    text: str
+    query: Optional[str] = DEFAULT_QUERY
+
+
 class JobCoverLetterRequest(BaseModel):
     cover_letters_file: Optional[str] = COVER_LETTERS_FILE
 
 
 class JobGenerateCoverLettersRequest(BaseModel):
-    query: str = DEFAULT_QUERY
-    jobs: Optional[List[Dict]]
+    query: Optional[str] = DEFAULT_QUERY
+    jobs: Optional[List[Dict]] = None
     jobs_file: Optional[str] = JOBS_FILE
     output_file: Optional[str] = COVER_LETTERS_FILE
 
@@ -101,7 +106,23 @@ class JobCoverLetterResponse(BaseModel):
     text: str
     response: Dict
 
-# @router.post("/generate-cover-letters", response_model=List[JobCoverLetterResponse])
+
+@router.post("/generate-cover-letter", response_model=JobCoverLetter)
+def generate_cover_letter(request: CoverLetterRequest):
+    model = "llama3.1"
+    tokenizer = get_ollama_tokenizer(model)
+    set_global_tokenizer(tokenizer)
+    llm = Ollama(model=model)
+    summarizer = Summarizer(llm=llm)
+
+    try:
+        response = summarizer.summarize(
+            request.query, request.text, JobCoverLetter, llm)
+        return JobCoverLetter(**response.dict())
+    except Exception as e:
+        logger.error(f"Error generating cover letter: {e}")
+        raise HTTPException(
+            status_code=500, detail="Failed to generate cover letter.")
 
 
 @router.post("/generate-cover-letters")

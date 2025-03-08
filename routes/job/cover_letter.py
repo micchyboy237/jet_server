@@ -76,8 +76,8 @@ class Summarizer:
             query_str=query,
             prompt_str=prompt,
             llm_kwargs={
-                "temperature": 0.3,
                 "options": {
+                    "temperature": 0.3,
                     "seed": random.randint(1, 9999)
                 }
                 # "max_prediction_ratio": 0.5

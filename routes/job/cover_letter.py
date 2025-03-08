@@ -76,7 +76,10 @@ class Summarizer:
             query_str=query,
             prompt_str=prompt,
             llm_kwargs={
-                "options": {"temperature": 0},
+                "temperature": 0.3,
+                "options": {
+                    "seed": random.randint(1, 9999)
+                }
                 # "max_prediction_ratio": 0.5
             },
         )
@@ -207,10 +210,7 @@ def generate_cover_letter(request: CoverLetterRequest):
 
     tokenizer = get_ollama_tokenizer(request.model)
     set_global_tokenizer(tokenizer)
-    llm = Ollama(model=request.model, temperature=0.3,
-                 options={
-                     "seed": random.randint(1, 9999)
-                 })
+    llm = Ollama(model=request.model)
     summarizer = Summarizer(llm=llm)
 
     try:
@@ -237,10 +237,7 @@ def generate_cover_letter(request: CoverLetterRequest):
 def generate_cover_letters(request: JobGenerateCoverLettersRequest):
     tokenizer = get_ollama_tokenizer(request.model)
     set_global_tokenizer(tokenizer)
-    llm = Ollama(model=request.model, temperature=0.3,
-                 options={
-                     "seed": random.randint(1, 9999)
-                 })
+    llm = Ollama(model=request.model)
 
     jobs_file = request.jobs_file or JOBS_FILE
     jobs: list[JobData] = load_file(jobs_file) or []

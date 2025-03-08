@@ -1,9 +1,9 @@
 import httpx
-from typing import TypedDict
+from typing import Optional, TypedDict
 from typing import Generator
 from fastapi import APIRouter, HTTPException, FastAPI, Request, Depends
 from pydantic import BaseModel
-from jet.memory.memgraph import generate_query, generate_cypher_query, initialize_graph
+from jet.memory.memgraph import MemgraphGraph, generate_query, generate_cypher_query, initialize_graph
 from jet.logger import logger
 from starlette.responses import StreamingResponse
 from tqdm import tqdm
@@ -30,10 +30,20 @@ MEMGRAPH_URI = os.environ.get("MEMGRAPH_URI", "bolt://localhost:7687")
 MEMGRAPH_USERNAME = os.environ.get("MEMGRAPH_USERNAME", "")
 MEMGRAPH_PASSWORD = os.environ.get("MEMGRAPH_PASSWORD", "")
 
-graph = initialize_graph(MEMGRAPH_URI, MEMGRAPH_USERNAME, MEMGRAPH_PASSWORD)
+graph: Optional["MemgraphGraph"] = None
 
 
 router = APIRouter()
+
+
+def setup_graph() -> "MemgraphGraph":
+    global graph
+
+    if not graph:
+        graph = initialize_graph(
+            MEMGRAPH_URI, MEMGRAPH_USERNAME, MEMGRAPH_PASSWORD)
+
+    return graph
 
 
 @router.post("/login", response_model=AuthResponse)
@@ -45,6 +55,8 @@ async def login(request: LoginRequest):
 
 def event_cypher_query_stream(request: CypherQueryRequest) -> Generator[str, None, None]:
     """Generator function to yield Cypher queries for streaming."""
+    graph = setup_graph()
+
     try:
         generated_cypher_queries = generate_cypher_query(
             request.query, graph, request.tone_name, num_of_queries=request.num_of_queries
@@ -91,6 +103,7 @@ async def query_graph(request: GraphQueryRequest):
     """
     Query the knowledge graph and return formatted results.
     """
+    graph = setup_graph()
 
     graph_result = graph.query(request.query)
 

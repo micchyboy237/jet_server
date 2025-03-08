@@ -8,7 +8,8 @@ from routes.ner import router as ner_router
 from routes.prompt import router as prompt_router
 from routes.graph import router as graph_router
 from routes.job.cover_letter import router as cover_letter_router
-from middlewares import log_exceptions_middleware, AuthMemgraphRetryOn401Middleware
+from routes.eval.faithfulness import router as faithfulness_router
+from middlewares import log_exceptions_middleware
 from jet.llm.ollama.base import initialize_ollama_settings
 from jet.logger import logger
 
@@ -32,8 +33,8 @@ app.add_middleware(
 
 
 # Middleware to Catch 401 Errors and Retry
-app.add_middleware(AuthMemgraphRetryOn401Middleware)
-# app.middleware("http")(log_exceptions_middleware)
+# app.add_middleware(AuthMemgraphRetryOn401Middleware)
+app.middleware("http")(log_exceptions_middleware)
 
 
 # Exception Handler for 401 Unauthorized Errors
@@ -50,6 +51,8 @@ app.include_router(prompt_router, prefix="/api/v1/prompt", tags=["prompt"])
 app.include_router(graph_router, prefix="/api/v1/graph", tags=["graph"])
 app.include_router(cover_letter_router,
                    prefix="/api/v1/job/cover-letter", tags=["job", "cover-letter"])
+app.include_router(faithfulness_router,
+                   prefix="/api/v1/eval/faithfulness", tags=["evaluation", "faithfulness"])
 
 if __name__ == "__main__":
     import uvicorn

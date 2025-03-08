@@ -64,6 +64,6 @@ if __name__ == "__main__":
         reload_dirs=[
             "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules"
         ],
-        reload_excludes=["**/.venv/**"],  # Exclude .venv from being watched
+        # reload_excludes=["**/.venv/**"],  # Exclude .venv from being watched
     )
     # uvicorn.run("app:app", host="0.0.0.0", port=8002)

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.routing import APIRouter
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
 from deeplake.core.vectorstore import VectorStore
 from jet.llm.utils.embeddings import get_ollama_embedding_function
 from jet.llm.utils.llama_index_utils import display_jet_source_nodes
@@ -16,30 +16,38 @@ router = APIRouter()
 VECTOR_STORE_PATH = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/llm/semantic_search/generated/deeplake/store_1"
 EMBEDDING_FUNCTION = get_ollama_embedding_function("mxbai-embed-large")
 
-# Initialize VectorStore
-vector_store = VectorStore(
-    path=VECTOR_STORE_PATH,
-    read_only=True
-)
+vector_store: Optional["VectorStore"] = None
+
 
 # Request model
-
-
 class SearchRequest(BaseModel):
     query: str
     top_k: int = 20
 
+
 # Response model
-
-
 class SearchResult(BaseModel):
     text: str
     metadata: Dict[str, str]
     score: float
 
 
+def setup_vector_store() -> "VectorStore":
+    global vector_store
+
+    if not vector_store:
+        vector_store = VectorStore(
+            path=VECTOR_STORE_PATH,
+            read_only=True
+        )
+
+    return vector_store
+
+
 @router.post("/search", response_model=List[SearchResult])
 def search_vector_store(request: SearchRequest):
+    vector_store = setup_vector_store()
+
     try:
         logger.info("Received search query")
         logger.debug(format_json(request))

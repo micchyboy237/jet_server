@@ -207,7 +207,10 @@ def generate_cover_letter(request: CoverLetterRequest):
 
     tokenizer = get_ollama_tokenizer(request.model)
     set_global_tokenizer(tokenizer)
-    llm = Ollama(model=request.model)
+    llm = Ollama(model=request.model, temperature=0.3,
+                 options={
+                     "seed": random.randint(1, 9999)
+                 })
     summarizer = Summarizer(llm=llm)
 
     try:

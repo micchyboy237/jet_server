@@ -1,4 +1,5 @@
 import os
+import random
 from fastapi import APIRouter, HTTPException
 from fastapi.param_functions import Depends
 from fastapi.responses import StreamingResponse
@@ -233,7 +234,10 @@ def generate_cover_letter(request: CoverLetterRequest):
 def generate_cover_letters(request: JobGenerateCoverLettersRequest):
     tokenizer = get_ollama_tokenizer(request.model)
     set_global_tokenizer(tokenizer)
-    llm = Ollama(model=request.model)
+    llm = Ollama(model=request.model, temperature=0.3,
+                 options={
+                     "seed": random.randint(1, 9999)
+                 })
 
     jobs_file = request.jobs_file or JOBS_FILE
     jobs: list[JobData] = load_file(jobs_file) or []

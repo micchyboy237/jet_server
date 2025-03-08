@@ -140,12 +140,7 @@ def load_cover_letter_by_id(
         raw_data = json.load(f)
 
     # Validate the data using Pydantic
-    try:
-        validated_data = [JobCoverLetterItem(**item) for item in raw_data]
-    except ValidationError as e:
-        logger.error(e)
-        raise HTTPException(
-            status_code=400, detail=f"Invalid data format: {e}")
+    validated_data = [JobCoverLetterItem(**item) for item in raw_data]
 
     # Find the cover letter by ID
     cover_letter = next(
@@ -224,7 +219,7 @@ def generate_cover_letter(request: CoverLetterRequest):
             output_file = request.output_file or COVER_LETTERS_FILE
             existing_results = load_file(output_file) or []
             existing_results.insert(
-                0, {"id": request.job_id, "text": cover_letter_context, "posted_date": job['posted_date'], "response": cover_letter.dict()})
+                0, {"id": job["id"], "link": job["link"], "text": cover_letter_context, "posted_date": job['posted_date'], "response": cover_letter.dict()})
             save_file(existing_results, output_file)
 
         return cover_letter

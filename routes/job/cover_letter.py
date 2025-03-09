@@ -262,6 +262,7 @@ def generate_cover_letters(request: JobGenerateCoverLettersRequest):
     summarizer = Summarizer(llm=llm)
 
     def generate_stream():
+        nonlocal existing_results
         for job in tqdm(jobs, total=len(jobs), unit="job"):
             json_parts_dict = extract_values_by_paths(
                 job, attributes, is_flattened=True)

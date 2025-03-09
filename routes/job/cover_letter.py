@@ -222,8 +222,21 @@ def generate_cover_letter(request: CoverLetterRequest):
         if job:
             output_file = request.output_file or COVER_LETTERS_FILE
             existing_results = load_file(output_file) or []
+
+            # Remove any existing job with the same id
+            existing_results = [
+                entry for entry in existing_results if entry["id"] != job["id"]]
+
+            # Insert the new job at the beginning
             existing_results.insert(
-                0, {"id": job["id"], "link": job["link"], "text": cover_letter_context, "posted_date": job['posted_date'], "response": cover_letter.dict()})
+                0, {"id": job["id"], "link": job["link"], "text": cover_letter_context,
+                    "posted_date": job['posted_date'], "response": cover_letter.dict()}
+            )
+
+            # Sort by posted_date in descending order (newest first)
+            existing_results = sorted(
+                existing_results, key=lambda x: x['posted_date'], reverse=True)
+
             save_file(existing_results, output_file)
 
         return cover_letter
@@ -283,11 +296,20 @@ def generate_cover_letters(request: JobGenerateCoverLettersRequest):
                     response=response.dict(),
                 )
 
+                # Remove any existing result with the same id
+                final_results = [
+                    entry for entry in final_results if entry["id"] != result.id]
+
+                # Insert the new result at the beginning
                 final_results.insert(0, result.dict())
+
+                # Sort by posted_date in descending order (newest first)
                 sorted_results = sorted(
                     final_results, key=lambda x: x['posted_date'], reverse=True)
 
+                # Save the sorted results to the output file
                 save_file(sorted_results, output_file)
+
                 yield result.json() + "\n"
             except Exception as e:
                 logger.error(f"Error processing job {job['id']}: {e}")

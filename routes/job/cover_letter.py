@@ -221,23 +221,14 @@ def generate_cover_letter(request: CoverLetterRequest):
         # Save the generated cover letter
         if job:
             output_file = request.output_file or COVER_LETTERS_FILE
-            existing_results = load_file(output_file) or []
-
-            # Remove any existing job with the same id
-            existing_results = [
-                entry for entry in existing_results if entry["id"] != job["id"]]
-
-            # Insert the new job at the beginning
+            existing_results: list[JobData] = load_file(output_file) or []
             existing_results.insert(
-                0, {"id": job["id"], "link": job["link"], "text": cover_letter_context,
-                    "posted_date": job['posted_date'], "response": cover_letter.dict()}
-            )
-
-            # Sort by posted_date in descending order (newest first)
-            existing_results = sorted(
+                0, {"id": job["id"], "link": job["link"], "text": cover_letter_context, "posted_date": job['posted_date'], "response": cover_letter.dict()})
+            existing_results = list(
+                {job["id"]: job for job in existing_results}.values())
+            sorted_results = sorted(
                 existing_results, key=lambda x: x['posted_date'], reverse=True)
-
-            save_file(existing_results, output_file)
+            save_file(sorted_results, output_file)
 
         return cover_letter
     except Exception as e:
@@ -259,7 +250,7 @@ def generate_cover_letters(request: JobGenerateCoverLettersRequest):
         jobs = [job for job in jobs if job['id'] in request.job_ids]
 
     output_file = request.output_file or COVER_LETTERS_FILE
-    existing_results = load_file(output_file) or []
+    existing_results: list[JobData] = load_file(output_file) or []
     existing_ids = {item['id'] for item in existing_results}
     jobs = [job for job in jobs if job['id'] not in existing_ids]
 
@@ -269,8 +260,6 @@ def generate_cover_letters(request: JobGenerateCoverLettersRequest):
     attributes = request.attributes or ["title", "details"]
 
     summarizer = Summarizer(llm=llm)
-
-    final_results = [*existing_results]
 
     def generate_stream():
         for job in tqdm(jobs, total=len(jobs), unit="job"):
@@ -296,18 +285,11 @@ def generate_cover_letters(request: JobGenerateCoverLettersRequest):
                     response=response.dict(),
                 )
 
-                # Remove any existing result with the same id
-                final_results = [
-                    entry for entry in final_results if entry["id"] != result.id]
-
-                # Insert the new result at the beginning
-                final_results.insert(0, result.dict())
-
-                # Sort by posted_date in descending order (newest first)
+                existing_results.insert(0, result.dict())
+                existing_results = list(
+                    {job["id"]: job for job in existing_results}.values())
                 sorted_results = sorted(
-                    final_results, key=lambda x: x['posted_date'], reverse=True)
-
-                # Save the sorted results to the output file
+                    existing_results, key=lambda x: x['posted_date'], reverse=True)
                 save_file(sorted_results, output_file)
 
                 yield result.json() + "\n"

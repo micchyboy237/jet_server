@@ -1,8 +1,9 @@
 import threading
 from typing import Callable, Generator, Literal, Optional
-from jet.file.utils import get_file_last_modified
+from jet.file.utils import get_file_last_modified, load_file
 from jet.logger import logger
 from jet.memory.lru_cache import LRUCache
+from jet.transformers.object import make_serializable
 from llama_index.core.schema import Document
 # from jet.llm.ollama.constants import OLLAMA_SMALL_EMBED_MODEL
 # from jet.llm.ollama.models import OLLAMA_EMBED_MODELS, OLLAMA_MODEL_NAMES
@@ -134,5 +135,24 @@ class RAG:
         }
 
         result = self.query_nodes(**options)
+
+        # Populate metadata with all attributes
+        if isinstance(self.path_or_docs, str):
+            base_data = load_file(self.path_or_docs) or []
+            base_data_dict = {d["id"]: d for d in base_data}
+            for idx, node in enumerate(result["nodes"]):
+                node_dict = make_serializable(node)
+                result["nodes"][idx] = {
+                    "id": node.node_id,
+                    "score": node.score,
+                    "text": node.text,
+                    "metadata": {
+                        **node_dict["node"]["metadata"],
+                        **base_data_dict[node_dict["node"]["metadata"]["id"]]
+                    },
+                    "relationships": node_dict["node"]["relationships"],
+                    "start_char_idx": node_dict["node"]["start_char_idx"],
+                    "end_char_idx": node_dict["node"]["end_char_idx"],
+                }
 
         return result

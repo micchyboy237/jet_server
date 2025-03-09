@@ -286,7 +286,8 @@ async def query_stop():
     logger.purple("Response:", response)
 
 
-@router.post("/nodes", response_model=VectorNodesResponse)
+# @router.post("/nodes", response_model=VectorNodesResponse)
+@router.post("/nodes")
 async def get_nodes(query_request: QueryRequest):
     query_request_dict = query_request.__dict__.copy()
     query = query_request_dict.pop("query")
@@ -298,9 +299,12 @@ async def get_nodes(query_request: QueryRequest):
 
     result = rag.get_results(query, **query_request_dict)
 
-    data = VectorNodesResponse.from_nodes(result["nodes"])
+    # data = VectorNodesResponse.from_nodes(result["nodes"])
+    data = result["nodes"]
 
-    return data
+    return {
+        "data": data
+    }
 
 
 @router.post("/stream-nodes", response_model=VectorNodesResponse)

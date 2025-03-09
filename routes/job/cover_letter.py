@@ -161,7 +161,7 @@ class JobCoverLetterRequest(BaseModel):
 
 
 class JobGenerateCoverLettersRequest(BaseModel):
-    job_ids: list[str]
+    job_ids: Optional[list[str]] = None
     attributes: list[str] = []
     model: OLLAMA_MODEL_NAMES = "llama3.2"
     query: str = DEFAULT_QUERY

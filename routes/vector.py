@@ -1,86 +1,104 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.routing import APIRouter
+from fastapi import APIRouter, HTTPException
+from jet.file.utils import load_file
+from jet.search.similarity import get_bm25_similarities
+from jet.search.transformers import clean_string
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List
+from jet.wordnet.words import get_words
+from shared.data_types.job import JobData
 
-from jet.llm.utils.embeddings import get_ollama_embedding_function
-from jet.llm.utils.llama_index_utils import display_jet_source_nodes
-from jet.logger import logger
-from jet.transformers.formatters import format_json
-from llama_index.core.schema import NodeWithScore, TextNode
-
-# FastAPI router
 router = APIRouter()
 
-# Configuration
-VECTOR_STORE_PATH = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/llm/semantic_search/generated/deeplake/store_1"
-EMBEDDING_FUNCTION = get_ollama_embedding_function("mxbai-embed-large")
+PHRASE_MODEL_PATH = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/wordnet/generated/gensim_jet_phrase_model.pkl"
 
 
-class SearchRequest(BaseModel):
-    query: str
-    top_k: int = 20
+# Define the request body model
+class BM25SimilarityRequest(BaseModel):
+    queries: List[str]
+    data_file: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/my-jobs/saved/jobs.json"
 
-# Response model
 
-
-class SearchResult(BaseModel):
+# Define the response model
+class BM25SimilarityResult(BaseModel):
     text: str
-    metadata: Dict[str, str]
     score: float
+    similarity: float
 
 
-@router.post("/search", response_model=List[SearchResult])
-def search_vector_store(request: SearchRequest):
-    from deeplake.core.vectorstore import VectorStore
+# Helper function for transforming corpus
+def transform_corpus(sentences: List[str]) -> List[List[str]]:
+    return [get_words(sentence) for sentence in sentences]
 
-    # Initialize VectorStore
-    vector_store = VectorStore(
-        path=VECTOR_STORE_PATH,
-        read_only=True
-    )
 
+# Helper function for loading the data
+def load_data(file_path: str) -> List[JobData]:
+    return load_file(file_path)
+
+
+def extract_phrases(sentences: list[str], sentences_no_newline: list[str]) -> list[str]:
+    from jet.wordnet.gensim_scripts.phrase_detector import PhraseDetector
+
+    detector = PhraseDetector(PHRASE_MODEL_PATH, sentences, reset_cache=False)
+
+    sentences_no_newline = sentences_no_newline.copy()
+
+    results_generator = detector.detect_phrases(sentences)
+    for result in results_generator:
+        multi_gram_phrases = " ".join(result["phrases"])
+        orig_sentence = sentences_no_newline[result["index"]]
+        updated_sentence = orig_sentence + " " + multi_gram_phrases
+
+        # orig_data = data[result["index"]]
+        # sentences_dict[updated_sentence] = orig_data
+        sentences_no_newline[result["index"]] = updated_sentence
+
+    return sentences_no_newline
+
+# BM25 Similarity search endpoint (POST method)
+
+
+@router.post("/bm25-similarity", response_model=List[BM25SimilarityResult])
+async def bm25_similarity(request: BM25SimilarityRequest):
     try:
-        logger.info("Received search query")
-        logger.debug(format_json(request))
+        # Load data
+        data: List[JobData] = load_data(request.data_file)
 
-        # Perform search
-        results = vector_store.search(
-            embedding_data=request.query,
-            k=request.top_k,
-            embedding_function=EMBEDDING_FUNCTION
-        )
+        # Prepare sentences
+        sentences = []
+        sentences_dict = {}
+        sentences_no_newline = []
 
-        # Parse results into nodes with scores
-        nodes_with_scores = [
-            NodeWithScore(
-                node=TextNode(
-                    text=str(text),
-                    # Ensure all metadata values are strings
-                    metadata={k: str(v) for k, v in metadata.items()}
-                ),
-                score=float(score)
-            )
-            for text, metadata, score in zip(results["text"], results["metadata"], results["score"])
+        for item in data:
+            sentence = "\n".join([
+                item["title"],
+                item["details"],
+                "\n".join([f"Tech: {tech}" for tech in sorted(
+                    item["entities"]["technology_stack"], key=str.lower)]),
+                "\n".join([f"Tag: {tech}" for tech in sorted(
+                    item["tags"], key=str.lower)]),
+            ])
+            cleaned_sentence = clean_string(sentence.lower())
+            sentences.append(cleaned_sentence)
+            sentences_no_newline.append(" ".join(get_words(cleaned_sentence)))
+
+        # Perform BM25 similarity search
+        queries = ["_".join(get_words(query.lower()))
+                   for query in request.queries]
+
+        sentences_no_newline = extract_phrases(sentences, sentences_no_newline)
+
+        similarities = get_bm25_similarities(
+            queries, sentences_no_newline)
+
+        # Format the results
+        results = [
+            {"text": result["text"], "score": result["score"],
+                "similarity": result["similarity"]}
+            for result in similarities
         ]
 
-        # Optionally display source nodes (debugging or logging purposes)
-        display_jet_source_nodes(request.query, nodes_with_scores)
-
-        # Format response
-        response = [
-            SearchResult(
-                text=node.node.text,
-                metadata=node.node.metadata,
-                score=node.score
-            )
-            for node in nodes_with_scores
-        ]
-
-        return response
+        return results
 
     except Exception as e:
-        # Updated logging to avoid 'exc_info'
-        logger.error(f"Error during search: {e}")
         raise HTTPException(
-            status_code=500, detail="An error occurred during the search.")
+            status_code=500, detail=f"An error occurred: {str(e)}")

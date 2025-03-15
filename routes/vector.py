@@ -11,8 +11,11 @@ router = APIRouter()
 
 PHRASE_MODEL_PATH = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/wordnet/generated/gensim_jet_phrase_model.pkl"
 
+phrase_detector = None
 
 # Define the request body model
+
+
 class BM25SimilarityRequest(BaseModel):
     queries: List[str]
     data_file: str = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/my-jobs/saved/jobs.json"
@@ -20,15 +23,27 @@ class BM25SimilarityRequest(BaseModel):
 
 # Define the response model
 class BM25SimilarityData(BaseModel):
-    text: str
     score: float
     similarity: float
-    data: JobData
+    matched: list[str]
+    result: JobData
 
 
 class BM25SimilarityResult(BaseModel):
     count: int
     data: List[BM25SimilarityData]
+
+
+def setup_phrase_detector(sentences):
+    from jet.wordnet.gensim_scripts.phrase_detector import PhraseDetector
+
+    global phrase_detector
+
+    if not phrase_detector:
+        phrase_detector = PhraseDetector(
+            PHRASE_MODEL_PATH, sentences, reset_cache=False)
+
+    return phrase_detector
 
 
 # Helper function for transforming corpus
@@ -48,9 +63,7 @@ class ExtractedPhrase(TypedDict):
 
 
 def extract_phrases(sentences: list[str], sentences_no_newline: list[str]) -> list[ExtractedPhrase]:
-    from jet.wordnet.gensim_scripts.phrase_detector import PhraseDetector
-
-    detector = PhraseDetector(PHRASE_MODEL_PATH, sentences, reset_cache=False)
+    detector = setup_phrase_detector(sentences)
 
     results: list[ExtractedPhrase] = []
 
@@ -113,8 +126,12 @@ async def bm25_similarity(request: BM25SimilarityRequest):
 
         # Format the results
         results = [
-            {"text": result["text"], "score": result["score"],
-                "similarity": result["similarity"], "data": sentence_corpus_dict[result["text"]]}
+            {
+                "score": result["score"],
+                "similarity": result["similarity"],
+                "matched": [query for query in queries if query in result["text"]],
+                "result": sentence_corpus_dict[result["text"]]
+            }
             for result in similarities
         ]
 

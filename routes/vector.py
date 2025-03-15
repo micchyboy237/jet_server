@@ -26,6 +26,7 @@ class BM25SimilarityData(BaseModel):
     score: float
     similarity: float
     matched: list[str]
+    text: str
     result: JobData
 
 
@@ -41,7 +42,7 @@ def setup_phrase_detector(sentences):
 
     if not phrase_detector:
         phrase_detector = PhraseDetector(
-            PHRASE_MODEL_PATH, sentences, reset_cache=False)
+            PHRASE_MODEL_PATH, sentences, reset_cache=True)
 
     return phrase_detector
 
@@ -56,36 +57,7 @@ def load_data(file_path: str) -> List[JobData]:
     return load_file(file_path)
 
 
-class ExtractedPhrase(TypedDict):
-    index: int  # Index of the sentence
-    phrases: list[str]
-    sentence: str
-
-
-def extract_phrases(sentences: list[str], sentences_no_newline: list[str]) -> list[ExtractedPhrase]:
-    detector = setup_phrase_detector(sentences)
-
-    results: list[ExtractedPhrase] = []
-
-    results_generator = detector.detect_phrases(sentences)
-    for result in results_generator:
-        multi_gram_phrases = " ".join(result["phrases"])
-        orig_sentence = sentences_no_newline[result["index"]]
-        updated_sentence = orig_sentence + " " + multi_gram_phrases
-
-        # orig_data = data[result["index"]]
-        # sentences_dict[updated_sentence] = orig_data
-        results.append({
-            "index": result["index"],
-            "phrases": result["phrases"],
-            "sentence": updated_sentence
-        })
-
-    return results
-
 # BM25 Similarity search endpoint (POST method)
-
-
 @router.post("/bm25-similarity", response_model=BM25SimilarityResult)
 async def bm25_similarity(request: BM25SimilarityRequest):
     try:
@@ -114,12 +86,17 @@ async def bm25_similarity(request: BM25SimilarityRequest):
         queries = ["_".join(get_words(query.lower()))
                    for query in request.queries]
 
-        extracted_phrases = extract_phrases(sentences, sentences_no_newline)
+        detector = setup_phrase_detector(sentences)
 
-        sentence_corpus_dict = {
-            item["sentence"]: data[item["index"]] for item in extracted_phrases}
+        results_generator = detector.detect_phrases(sentences)
+        for result in results_generator:
+            multi_gram_phrases = " ".join(result["phrases"])
+            orig_sentence = sentences_no_newline[result["index"]]
+            updated_sentence = orig_sentence + " " + multi_gram_phrases
 
-        sentences_no_newline = list(set(sentence_corpus_dict.keys()))
+            orig_data = data[result["index"]]
+            sentences_dict[updated_sentence] = orig_data
+            sentences_no_newline[result["index"]] = updated_sentence
 
         similarities = get_bm25_similarities(
             queries, sentences_no_newline)
@@ -130,7 +107,8 @@ async def bm25_similarity(request: BM25SimilarityRequest):
                 "score": result["score"],
                 "similarity": result["similarity"],
                 "matched": [query for query in queries if query in result["text"]],
-                "result": sentence_corpus_dict[result["text"]]
+                "text": result["text"],
+                "result": sentences_dict[result["text"]]
             }
             for result in similarities
         ]

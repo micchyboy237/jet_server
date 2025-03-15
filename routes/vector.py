@@ -26,7 +26,6 @@ class BM25SimilarityData(BaseModel):
     score: float
     similarity: float
     matched: list[str]
-    text: str
     result: JobData
 
 
@@ -107,7 +106,6 @@ async def bm25_similarity(request: BM25SimilarityRequest):
                 "score": result["score"],
                 "similarity": result["similarity"],
                 "matched": [query for query in queries if query in result["text"]],
-                "text": result["text"],
                 "result": sentences_dict[result["text"]]
             }
             for result in similarities

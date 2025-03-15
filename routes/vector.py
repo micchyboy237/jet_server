@@ -3,7 +3,7 @@ from jet.file.utils import load_file
 from jet.search.similarity import get_bm25_similarities
 from jet.search.transformers import clean_string
 from pydantic import BaseModel
-from typing import List
+from typing import List, TypedDict
 from jet.wordnet.words import get_words
 from shared.data_types.job import JobData
 
@@ -19,10 +19,16 @@ class BM25SimilarityRequest(BaseModel):
 
 
 # Define the response model
-class BM25SimilarityResult(BaseModel):
+class BM25SimilarityData(BaseModel):
     text: str
     score: float
     similarity: float
+    data: JobData
+
+
+class BM25SimilarityResult(BaseModel):
+    count: int
+    data: List[BM25SimilarityData]
 
 
 # Helper function for transforming corpus
@@ -35,12 +41,18 @@ def load_data(file_path: str) -> List[JobData]:
     return load_file(file_path)
 
 
-def extract_phrases(sentences: list[str], sentences_no_newline: list[str]) -> list[str]:
+class ExtractedPhrase(TypedDict):
+    index: int  # Index of the sentence
+    phrases: list[str]
+    sentence: str
+
+
+def extract_phrases(sentences: list[str], sentences_no_newline: list[str]) -> list[ExtractedPhrase]:
     from jet.wordnet.gensim_scripts.phrase_detector import PhraseDetector
 
     detector = PhraseDetector(PHRASE_MODEL_PATH, sentences, reset_cache=False)
 
-    sentences_no_newline = sentences_no_newline.copy()
+    results: list[ExtractedPhrase] = []
 
     results_generator = detector.detect_phrases(sentences)
     for result in results_generator:
@@ -50,14 +62,18 @@ def extract_phrases(sentences: list[str], sentences_no_newline: list[str]) -> li
 
         # orig_data = data[result["index"]]
         # sentences_dict[updated_sentence] = orig_data
-        sentences_no_newline[result["index"]] = updated_sentence
+        results.append({
+            "index": result["index"],
+            "phrases": result["phrases"],
+            "sentence": updated_sentence
+        })
 
-    return sentences_no_newline
+    return results
 
 # BM25 Similarity search endpoint (POST method)
 
 
-@router.post("/bm25-similarity", response_model=List[BM25SimilarityResult])
+@router.post("/bm25-similarity", response_model=BM25SimilarityResult)
 async def bm25_similarity(request: BM25SimilarityRequest):
     try:
         # Load data
@@ -85,7 +101,12 @@ async def bm25_similarity(request: BM25SimilarityRequest):
         queries = ["_".join(get_words(query.lower()))
                    for query in request.queries]
 
-        sentences_no_newline = extract_phrases(sentences, sentences_no_newline)
+        extracted_phrases = extract_phrases(sentences, sentences_no_newline)
+
+        sentence_corpus_dict = {
+            item["sentence"]: data[item["index"]] for item in extracted_phrases}
+
+        sentences_no_newline = list(set(sentence_corpus_dict.keys()))
 
         similarities = get_bm25_similarities(
             queries, sentences_no_newline)
@@ -93,11 +114,14 @@ async def bm25_similarity(request: BM25SimilarityRequest):
         # Format the results
         results = [
             {"text": result["text"], "score": result["score"],
-                "similarity": result["similarity"]}
+                "similarity": result["similarity"], "data": sentence_corpus_dict[result["text"]]}
             for result in similarities
         ]
 
-        return results
+        return {
+            "count": len(results),
+            "data": results
+        }
 
     except Exception as e:
         raise HTTPException(

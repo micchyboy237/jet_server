@@ -105,7 +105,7 @@ async def bm25_similarity(request: BM25SimilarityRequest):
             {
                 "score": result["score"],
                 "similarity": result["similarity"],
-                "matched": [query for query in queries if query in result["text"]],
+                "matched": result["matched"],
                 "result": sentences_dict[result["text"]]
             }
             for result in similarities

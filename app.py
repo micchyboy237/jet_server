@@ -2,13 +2,15 @@ import os
 from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from routes.vector import router as vector_router
+from routes.rerankers.heuristic import router as reranker_heuristic_router
+from routes.rerankers.semantic import router as reranker_semantic_router
 from routes.rag import router as rag_router
 from routes.ner import router as ner_router
 from routes.prompt import router as prompt_router
 from routes.graph import router as graph_router
 from routes.job.cover_letter import router as cover_letter_router
 from routes.eval.faithfulness import router as faithfulness_router
+from routes.evaluation import router as evaluation_router
 from middlewares import log_exceptions_middleware
 from jet.llm.ollama.base import initialize_ollama_settings
 from jet.logger import logger
@@ -45,12 +47,17 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 # Include routers
 app.include_router(rag_router, prefix="/api/v1/rag", tags=["rag"])
-app.include_router(vector_router, prefix="/api/v1/vector", tags=["vector"])
+app.include_router(reranker_heuristic_router,
+                   prefix="/api/v1/reranker/heuristic", tags=["reranker", "heuristic"])
+app.include_router(reranker_semantic_router,
+                   prefix="/api/v1/reranker/semantic", tags=["reranker", "semantic"])
 app.include_router(ner_router, prefix="/api/v1/ner", tags=["ner"])
 app.include_router(prompt_router, prefix="/api/v1/prompt", tags=["prompt"])
 app.include_router(graph_router, prefix="/api/v1/graph", tags=["graph"])
 app.include_router(cover_letter_router,
                    prefix="/api/v1/job/cover-letter", tags=["job", "cover-letter"])
+app.include_router(evaluation_router,
+                   prefix="/api/v1/evaluation", tags=["evaluation", "models"])
 app.include_router(faithfulness_router,
                    prefix="/api/v1/eval/faithfulness", tags=["evaluation", "faithfulness"])
 

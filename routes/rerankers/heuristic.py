@@ -1,71 +1,32 @@
-import hashlib
-import json
-import os
-import pickle
-from tqdm import tqdm
 from fastapi import APIRouter, HTTPException
 from jet.file.utils import load_file
-from jet.search.similarity import get_bm25p_similarities
+from jet.search.similarity import get_bm25_similarities
 from jet.search.transformers import clean_string
 from typing import List
 from jet.wordnet.n_grams import get_most_common_ngrams
 from jet.wordnet.words import get_words
 from shared.data_types.job import JobData
-from .reranker_types import (
-    SimilarityRequest,
-    SimilarityResult,
-)
+from .reranker_types import SimilarityRequest, SimilarityResult
+from .cache_manager import CacheManager
 
 router = APIRouter()
 
-# Set the directory for cached files
-CACHE_DIR = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/.cache/heuristics"
-CACHE_FILE = "ngrams_cache.pkl"  # Name of the cache file
+cache_manager = CacheManager()
 
-
-def get_file_hash(file_path: str) -> str:
-    """Generate a hash for the given file."""
-    hash_md5 = hashlib.md5()
-    with open(file_path, 'rb') as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
-
-
-def load_cache() -> dict:
-    """Load the cache file if exists, otherwise return an empty dict."""
-    cache_path = os.path.join(CACHE_DIR, CACHE_FILE)
-    if os.path.exists(cache_path):
-        with open(cache_path, 'rb') as cache_file:
-            return pickle.load(cache_file)
-    return {}
-
-
-def save_cache(data: dict) -> None:
-    """Save the cache to a file."""
-    os.makedirs(CACHE_DIR, exist_ok=True)
-    cache_path = os.path.join(CACHE_DIR, CACHE_FILE)
-    with open(cache_path, 'wb') as cache_file:
-        pickle.dump(data, cache_file)
 
 # BM25+ Similarity search endpoint (POST method)
-
-
 @router.post("/bm25", response_model=SimilarityResult)
 async def bm25_reranker(request: SimilarityRequest):
     try:
         # Load data
         data: List[JobData] = load_file(request.data_file)
 
-        # Generate hash for the current data file
-        current_file_hash = get_file_hash(request.data_file)
-
         # Load previous cache data
-        cache_data = load_cache()
+        cache_data = cache_manager.load_cache()
 
-        # Check if the data file has been updated
-        if cache_data.get("file_hash") != current_file_hash:
-            # File has been updated, regenerate the n-grams
+        # Check if the cache is valid or needs to be updated
+        if not cache_manager.is_cache_valid(request.data_file, cache_data):
+            # Cache is not valid, regenerate n-grams
             sentences = []
             for item in data:
                 sentence = "\n".join([
@@ -81,15 +42,12 @@ async def bm25_reranker(request: SimilarityRequest):
 
             # Generate n-grams
             common_texts_ngrams = [
-                list(get_most_common_ngrams(sentence, max_words=5).keys()) for sentence in tqdm(sentences)
+                list(get_most_common_ngrams(sentence, max_words=5).keys()) for sentence in sentences
             ]
 
-            # Save the new n-grams and file hash in the cache
-            cache_data = {
-                "file_hash": current_file_hash,
-                "common_texts_ngrams": common_texts_ngrams
-            }
-            save_cache(cache_data)
+            # Update the cache with the new n-grams
+            cache_data = cache_manager.update_cache(
+                request.data_file, common_texts_ngrams)
         else:
             # Use the cached n-grams
             common_texts_ngrams = cache_data["common_texts_ngrams"]
@@ -109,7 +67,7 @@ async def bm25_reranker(request: SimilarityRequest):
                 formatted_texts.append("_".join(text.split()))
             common_texts.append(" ".join(formatted_texts))
 
-        similarities = get_bm25p_similarities(queries, common_texts, ids)
+        similarities = get_bm25_similarities(queries, common_texts, ids)
 
         # Format the results
         results = [

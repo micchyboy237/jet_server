@@ -7,7 +7,7 @@ from jet.wordnet.n_grams import get_most_common_ngrams
 from jet.wordnet.words import get_words
 from shared.data_types.job import JobData
 from .reranker_types import SimilarityRequest, SimilarityResult
-from .cache_manager import CacheManager
+from jet.cache.cache_manager import CacheManager
 
 router = APIRouter()
 

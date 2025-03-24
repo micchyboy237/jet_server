@@ -13,7 +13,7 @@ from llama_index.core import VectorStoreIndex, Response
 from jet.llm.ollama.base import Ollama
 from jet.logger import logger
 from jet.llm.utils.llama_index_utils import display_jet_source_nodes
-from jet.llm.ollama import initialize_ollama_settings
+from jet.llm.ollama.base import initialize_ollama_settings
 
 # Initialize settings and FastAPI router
 initialize_ollama_settings()

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
+from jet.data.utils import generate_unique_hash
 from jet.file.utils import load_file
-from jet.search.similarity import get_bm25_similarities
-from jet.search.transformers import clean_string
+from jet.search.similarity import get_bm25_similarities, get_bm25_similarities_old
+from jet.search.formatters import clean_string
 from typing import List, Dict, Any, Optional, TypedDict
 from jet.utils.object import extract_values_by_paths
 from jet.wordnet.n_grams import get_most_common_ngrams
@@ -58,8 +59,10 @@ async def bm25_reranker(request: SimilarityRequest) -> SimilarityResult:
     data: list[str | dict[str, Any]] = load_file(request.data_file)
     texts = [format_texts(obj) if isinstance(
         obj, dict) else obj for obj in data]
+    ids = [generate_unique_hash() for _ in texts]
 
-    similarity_results = get_bm25_similarities(request.queries, texts)
+    similarity_results = get_bm25_similarities_old(request.queries, texts, ids)
+    # similarity_results = get_bm25_similarities(request.queries, texts)
     return {
         "count": len(similarity_results),
         "data": similarity_results

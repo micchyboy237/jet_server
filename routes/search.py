@@ -10,8 +10,8 @@ from jet.features.search_and_chat import search_and_rerank_data
 from jet.llm.models import OLLAMA_EMBED_MODELS
 from jet.scrapers.utils import safe_path_from_url
 from jet.llm.ollama.base import Ollama
-# Note: These imports are assumed; replace with actual implementations
 from jet.features.search_and_chat import compare_html_results, get_docs_from_html, rerank_nodes, group_nodes
+from llama_index.core.schema import TextNode
 
 router = APIRouter()
 
@@ -25,12 +25,14 @@ class SearchRequest(BaseModel):
     output_dir: str = OUTPUT_DIR
 
 
-async def stream_progress(message: str, data: Any = None) -> str:
-    """Helper function to format SSE messages."""
+async def stream_progress(event_type: str, message: str, data: Any = None) -> str:
+    """Helper function to format SSE messages with event type."""
     event_data = {"message": message}
     if data is not None:
         event_data["data"] = data
-    return f"data: {json.dumps(event_data)}\n\n"
+    sse_message = f"event: {event_type}\n"
+    sse_message += f"data: {json.dumps(event_data)}\n\n"
+    return sse_message
 
 
 async def process_and_compare_htmls(
@@ -40,29 +42,27 @@ async def process_and_compare_htmls(
     output_dir: str
 ) -> AsyncGenerator[Tuple[str, Dict[str, Any]], None]:
     """
-    Process HTMLs, rerank documents, and compare results to find the best-matching HTML, yielding progress updates.
-
-    Yields:
-        Tuple[str, Dict[str, Any]]: SSE-formatted progress message and optional data, including final results.
+    Process HTMLs, rerank documents, and compare results, yielding progress updates with event types.
     """
     html_results = []
     header_docs_for_all = {}
     sub_dir = os.path.join(output_dir, "searched_html")
 
-    yield (await stream_progress("Starting HTML processing", {"total_urls": len(selected_html)}), {})
+    yield (await stream_progress("html_processing", "Starting HTML processing", {"total_urls": len(selected_html)}), {})
 
     for idx, (url, html) in enumerate(selected_html, 1):
-        yield (await stream_progress(f"Processing HTML {idx}/{len(selected_html)}: {url}"), {})
+        yield (await stream_progress("html_processing", f"Processing HTML {idx}/{len(selected_html)}: {url}"), {})
         output_dir_url = safe_path_from_url(url, sub_dir)
         os.makedirs(output_dir_url, exist_ok=True)
 
         header_docs = get_docs_from_html(html)
-        yield (await stream_progress(f"Extracted header docs for {url}", {"header_docs_count": len(header_docs)}), {})
+        yield (await stream_progress("html_processing", f"Extracted header docs for {url}", {"header_docs_count": len(header_docs)}), {})
 
         query_scores, reranked_all_nodes = rerank_nodes(
             query, header_docs, embed_models)
         yield (
             await stream_progress(
+                "html_processing",
                 f"Reranked nodes for {url}",
                 {"query": query, "results": query_scores}
             ),
@@ -81,6 +81,7 @@ async def process_and_compare_htmls(
         ]
         yield (
             await stream_progress(
+                "html_processing",
                 f"Processed reranked nodes for {url}",
                 {"query": query, "results": reranked_nodes_data}
             ),
@@ -91,42 +92,41 @@ async def process_and_compare_htmls(
         header_docs_for_all[url] = (
             header_docs, query_scores, reranked_all_nodes)
 
-    yield (await stream_progress("Comparing HTML results"), {})
+    yield (await stream_progress("html_processing", "Comparing HTML results"), {})
     comparison_results = compare_html_results(query, html_results, top_n=1)
 
     if not comparison_results:
-        yield (await stream_progress("Error: No comparison results available"), {})
+        yield (await stream_progress("error", "No comparison results available"), {})
         return
 
     top_result = comparison_results[0]
     top_url = top_result["url"]
-    yield (await stream_progress(f"Selected top result: {top_url}"), {})
+    yield (await stream_progress("html_processing", f"Selected top result: {top_url}"), {})
 
     header_docs, query_scores, reranked_all_nodes = header_docs_for_all[top_url]
 
-    yield (await stream_progress("Grouping nodes for context"), {})
+    yield (await stream_progress("html_processing", "Grouping nodes for context"), {})
     sorted_reranked_nodes = sorted(
         reranked_all_nodes, key=lambda node: node.metadata['doc_index'])
     grouped_reranked_nodes = group_nodes(sorted_reranked_nodes, "llama3.1")
     context_nodes = grouped_reranked_nodes[0] if grouped_reranked_nodes else []
     yield (
         await stream_progress(
+            "html_processing",
             "Context nodes grouped",
             {"context_nodes_count": len(context_nodes)}
         ),
         {}
     )
 
-    # Yield final results as a special message
     final_results = {
-        # Simplified for brevity
         "header_docs": [doc.text for doc in header_docs],
         "html_results": [(url, dir_url, "html_content_omitted") for url, dir_url, _ in html_results],
         "query_scores": query_scores,
         "context_nodes": [{"text": node.text, "score": node.score} for node in context_nodes]
     }
     yield (
-        await stream_progress("Final HTML processing results", final_results),
+        await stream_progress("html_processing", "Final HTML processing results", final_results),
         final_results
     )
 
@@ -135,24 +135,24 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
     try:
         # Validate inputs
         if not request.query:
-            yield await stream_progress("Error: Query cannot be empty")
+            yield await stream_progress("error", "Query cannot be empty")
             return
 
         if not all(model in OLLAMA_EMBED_MODELS.__args__ for model in request.embed_models):
-            yield await stream_progress("Error: Invalid embed model specified")
+            yield await stream_progress("error", "Invalid embed model specified")
             return
 
-        # Create output directory if needed
+        # Initialize processing
         os.makedirs(request.output_dir, exist_ok=True)
-        yield await stream_progress("Initialized processing")
+        yield await stream_progress("progress", "Initialized processing")
 
         # Perform search and rerank
-        yield await stream_progress("Starting search and reranking")
+        yield await stream_progress("search_progress", "Starting search and reranking")
         search_results, selected_html = search_and_rerank_data(request.query)
-        yield await stream_progress("Search completed", {"search_results_count": len(search_results)})
+        yield await stream_progress("search_progress", "Search completed", {"search_results_count": len(search_results)})
 
-        # Process HTMLs and get results
-        yield await stream_progress("Processing HTML content")
+        # Process HTMLs
+        yield await stream_progress("progress", "Processing HTML content")
         html_generator = process_and_compare_htmls(
             request.query,
             selected_html,
@@ -164,7 +164,6 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         async for sse_message, data in html_generator:
             yield sse_message
             if data and "header_docs" in data:
-                # Extract final results from the special message
                 header_docs = [BaseDocument(text=text)
                                for text in data["header_docs"]]
                 html_results = [(url, dir_url, html)
@@ -174,54 +173,65 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
                     text=node["text"]), score=node["score"]) for node in data["context_nodes"]]
 
         yield await stream_progress(
+            "progress",
             "HTML processing completed",
             {"header_docs_count": len(header_docs),
              "html_results_count": len(html_results)}
         )
 
         # Prepare header texts
-        yield await stream_progress("Extracting header content")
+        yield await stream_progress("progress", "Extracting header content")
         header_texts = [doc.text for doc in header_docs]
         headers_text = "\n\n".join(header_texts)
-        yield await stream_progress("Header content extracted", {"header_text_length": len(headers_text)})
+        yield await stream_progress("progress", "Header content extracted", {"header_text_length": len(headers_text)})
 
         # Send query scores
-        yield await stream_progress("Sending query scores", {"query": request.query, "results": query_scores})
+        yield await stream_progress("progress", "Sending query scores", {"query": request.query, "results": query_scores})
 
         # Prepare context node details
-        yield await stream_progress("Processing context nodes")
-        group_header_doc_indexes = [node.metadata.get(
+        yield await stream_progress("progress", "Processing context nodes")
+        group_header_doc_indexes = [node.node.metadata.get(
             "doc_index", i) for i, node in enumerate(context_nodes)]
         context_nodes_data = [
             {
-                "doc": node.metadata.get("doc_index", i) + 1,
+                "doc": node.node.metadata.get("doc_index", i) + 1,
                 "rank": rank_idx + 1,
                 "score": node.score,
-                "text": node.text,
-                "metadata": node.metadata,
+                "text": node.node.text,
+                "metadata": node.node.metadata,
             }
             for rank_idx, node in enumerate(context_nodes)
-            if node.metadata.get("doc_index", rank_idx) in group_header_doc_indexes
+            if node.node.metadata.get("doc_index", rank_idx) in group_header_doc_indexes
         ]
-        yield await stream_progress("Context nodes processed", {"query": request.query, "results": context_nodes_data})
+        yield await stream_progress("progress", "Context nodes processed", {"query": request.query, "results": context_nodes_data})
 
         # Prepare context markdown
-        yield await stream_progress("Generating context markdown")
-        context = "\n\n".join([node.text for node in context_nodes])
-        yield await stream_progress("Context markdown generated", {"context_length": len(context)})
+        yield await stream_progress("progress", "Generating context markdown")
+        context = "\n\n".join([node.node.text for node in context_nodes])
+        yield await stream_progress("progress", "Context markdown generated", {"context_length": len(context)})
 
-        # Run LLM response
-        yield await stream_progress("Generating LLM response")
+        # Signal start of LLM streaming
+        yield await stream_progress("chat_start", "Starting LLM streaming response")
+
+        # Stream LLM response
         llm = Ollama(temperature=0.3, model=request.llm_model)
-        response = llm.chat(
-            request.query,
+        async for chunk in llm.stream_chat(
+            query=request.query,
             context=context,
             model=request.llm_model,
-        )
-        yield await stream_progress("LLM response generated", {"query": request.query, "response": make_serializable(response)})
+        ):
+            yield await stream_progress(
+                "chat_chunk",
+                "LLM response chunk",
+                {"query": request.query, "chunk": make_serializable(chunk)}
+            )
 
-        # Final completion message
+        # Signal end of LLM streaming
+        yield await stream_progress("chat_end", "LLM streaming response completed")
+
+        # Final completion
         yield await stream_progress(
+            "completed",
             "Processing completed",
             {
                 "status": "success",
@@ -232,7 +242,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         )
 
     except Exception as e:
-        yield await stream_progress(f"Error processing request: {str(e)}")
+        yield await stream_progress("error", f"Error processing request: {str(e)}")
         return
 
 

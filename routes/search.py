@@ -49,6 +49,7 @@ async def process_and_compare_htmls(
 ) -> AsyncGenerator[Tuple[str, Dict[str, Any]], None]:
     html_results = []
     header_docs_for_all = {}
+    output_dir = os.path.join(output_dir, query.lower().replace(' ', '_'))
     sub_dir = os.path.join(output_dir, "searched_html")
 
     # Reset searched html results
@@ -298,12 +299,15 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
 
         # Stream LLM response
         llm = Ollama(temperature=0.3, model=request.llm_model)
+        response = ""
         async for chunk in llm.stream_chat(
             query=request.query,
             context=context,
             model=request.llm_model,
         ):
+            response += chunk
             yield await stream_progress("chat_chunk", None, chunk)
+        save_file(response, "chat_response.md")
 
         # Signal end of LLM streaming
         yield await stream_progress("chat_end", "LLM streaming response completed")

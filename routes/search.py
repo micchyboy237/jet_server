@@ -6,7 +6,7 @@ from typing import List, Dict, Any, AsyncGenerator, Optional, Tuple
 import os
 import json
 from llama_index.core.schema import Document as BaseDocument, NodeWithScore
-from jet.features.search_and_chat import search_and_rerank_data
+from jet.features.search_and_chat import search_and_filter_data
 from jet.llm.models import OLLAMA_EMBED_MODELS
 from jet.scrapers.utils import safe_path_from_url
 from jet.llm.ollama.base import Ollama
@@ -150,7 +150,9 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
 
         # Perform search and rerank
         yield await stream_progress("search_progress", "Starting search and reranking")
-        search_results, selected_html = search_and_rerank_data(request.query)
+        search_rerank_result = search_and_filter_data(request.query)
+        search_results = search_rerank_result["search_results"]
+        selected_html = search_rerank_result["selected_html"]
         yield await stream_progress("search_progress", "Search completed", {"search_results_count": len(search_results)})
 
         # Process HTMLs

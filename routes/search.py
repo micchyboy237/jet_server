@@ -49,7 +49,6 @@ async def process_and_compare_htmls(
 ) -> AsyncGenerator[Tuple[str, Dict[str, Any]], None]:
     html_results = []
     header_docs_for_all = {}
-    output_dir = os.path.join(output_dir, query.lower().replace(' ', '_'))
     sub_dir = os.path.join(output_dir, "searched_html")
 
     # Reset searched html results
@@ -190,8 +189,12 @@ async def process_and_compare_htmls(
 
 async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
     try:
+        query = request.query
+        output_dir = os.path.join(
+            request.output_dir, query.lower().replace(' ', '_'))
+
         # Validate inputs
-        if not request.query:
+        if not query:
             yield await stream_progress("error", "Query cannot be empty")
             return
 
@@ -200,25 +203,25 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
             return
 
         # Initialize processing
-        os.makedirs(request.output_dir, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
         yield await stream_progress("progress", "Initialized processing")
 
         # Perform search and rerank
         yield await stream_progress("search_progress", "Starting search and reranking")
-        search_rerank_result = await search_and_filter_data(request.query)
+        search_rerank_result = await search_and_filter_data(query)
         search_results = search_rerank_result["search_results"]
         url_html_tuples = search_rerank_result["url_html_tuples"]
         save_file(search_results, os.path.join(
-            request.output_dir, "search_results.json"))
+            output_dir, "search_results.json"))
         yield await stream_progress("search_progress", "Search completed", {"search_results_count": len(search_results)})
 
         # Process HTMLs
         yield await stream_progress("progress", "Processing HTML content")
         html_generator = process_and_compare_htmls(
-            request.query,
+            query,
             url_html_tuples,
             request.embed_models,
-            request.output_dir
+            output_dir
         )
         header_docs, html_results, query_scores, context_nodes = [], [], [], []
 
@@ -254,14 +257,14 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
 
         # Save top results
         save_file("\n\n".join([doc.text for doc in header_docs]),
-                  os.path.join(request.output_dir, "top_docs.md"))
-        save_file(make_serializable({"url": url, "query": request.query, "info": compute_info(query_scores), "results": query_scores}),
-                  os.path.join(request.output_dir, "top_query_scores.json"))
+                  os.path.join(output_dir, "top_docs.md"))
+        save_file(make_serializable({"url": url, "query": query, "info": compute_info(query_scores), "results": query_scores}),
+                  os.path.join(output_dir, "top_query_scores.json"))
         save_file({
             "url": url,
-            "query": request.query,
+            "query": query,
             "results": reranked_all_nodes,
-        }, os.path.join(request.output_dir, "top_reranked_nodes.json"))
+        }, os.path.join(output_dir, "top_reranked_nodes.json"))
 
         # Prepare header texts
         yield await stream_progress("progress", "Extracting header content")
@@ -270,7 +273,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         yield await stream_progress("progress", "Header content extracted", {"header_text_length": len(headers_text)})
 
         # Send query scores
-        yield await stream_progress("progress", "Sending query scores", {"query": request.query, "results": query_scores})
+        yield await stream_progress("progress", "Sending query scores", {"query": query, "results": query_scores})
 
         # Prepare context node details
         # yield await stream_progress("progress", "Processing context nodes")
@@ -287,7 +290,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         #     for rank_idx, node in enumerate(context_nodes)
         #     if node.metadata.get("doc_index", rank_idx) in group_header_doc_indexes
         # ]
-        # yield await stream_progress("progress", "Context nodes processed", {"query": request.query, "results": context_nodes_data})
+        # yield await stream_progress("progress", "Context nodes processed", {"query": query, "results": context_nodes_data})
 
         # Prepare context markdown
         yield await stream_progress("progress", "Generating context markdown")
@@ -301,7 +304,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         llm = Ollama(temperature=0.3, model=request.llm_model)
         response = ""
         async for chunk in llm.stream_chat(
-            query=request.query,
+            query=query,
             context=context,
             model=request.llm_model,
         ):
@@ -318,7 +321,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
             "Processing completed",
             {
                 "status": "success",
-                "query": request.query,
+                "query": query,
                 "header_docs_count": len(header_docs),
                 "context_nodes_count": len(context_nodes)
             }

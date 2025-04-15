@@ -7,6 +7,7 @@ from routes.rerankers.semantic import router as reranker_semantic_router
 from routes.rag import router as rag_router
 from routes.ner import router as ner_router
 from routes.prompt import router as prompt_router
+from routes.search import router as search_router
 from routes.graph import router as graph_router
 from routes.job.cover_letter import router as cover_letter_router
 from routes.eval.faithfulness import router as faithfulness_router
@@ -53,6 +54,7 @@ app.include_router(reranker_semantic_router,
                    prefix="/api/v1/reranker/semantic", tags=["reranker", "semantic"])
 app.include_router(ner_router, prefix="/api/v1/ner", tags=["ner"])
 app.include_router(prompt_router, prefix="/api/v1/prompt", tags=["prompt"])
+app.include_router(search_router, prefix="/api/v1/search", tags=["search"])
 app.include_router(graph_router, prefix="/api/v1/graph", tags=["graph"])
 app.include_router(cover_letter_router,
                    prefix="/api/v1/job/cover-letter", tags=["job", "cover-letter"])

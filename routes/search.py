@@ -176,7 +176,6 @@ async def process_and_compare_htmls(
     final_results = {
         "url": top_url,
         "header_docs": [doc.text for doc in header_docs],
-        "html_results": [(url, dir_url, "html_content_omitted") for url, dir_url, _ in html_results],
         "query_scores": query_scores,
         "context_nodes": context_nodes,
         "reranked_all_nodes": reranked_all_nodes
@@ -225,13 +224,11 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         async for sse_message, data in html_generator:
             yield sse_message
             if data and "header_docs" in data:
+                url = data["url"]
                 header_docs = [BaseDocument(text=text)
                                for text in data["header_docs"]]
-                html_results = [(url, dir_url, html)
-                                for url, dir_url, html in data["html_results"]]
                 query_scores = data["query_scores"]
-                context_nodes = [NodeWithScore(node=TextNode(text=node["text"]), score=node["score"])
-                                 for node in data["context_nodes"]]
+                context_nodes = data["context_nodes"]
                 reranked_all_nodes = data["reranked_all_nodes"]
 
         # Validate outputs
@@ -255,20 +252,15 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         )
 
         # Save top results
-        save_file(
-            make_serializable("\n\n".join([doc.text for doc in header_docs])),
-            os.path.join(request.output_dir, "top_docs.md")
-        )
-        save_file(
-            make_serializable({"url": data["url"], "query": request.query, "info": compute_info(
-                query_scores), "results": query_scores}),
-            os.path.join(request.output_dir, "top_query_scores.json")
-        )
-        save_file(
-            {"url": data["url"], "query": request.query,
-                "results": reranked_all_nodes},
-            os.path.join(request.output_dir, "top_reranked_nodes.json")
-        )
+        save_file("\n\n".join([doc.text for doc in header_docs]),
+                  os.path.join(request.output_dir, "top_docs.md"))
+        save_file(make_serializable({"url": url, "query": request.query, "info": compute_info(query_scores), "results": query_scores}),
+                  os.path.join(request.output_dir, "top_query_scores.json"))
+        save_file({
+            "url": url,
+            "query": request.query,
+            "results": reranked_all_nodes,
+        }, os.path.join(request.output_dir, "top_reranked_nodes.json"))
 
         # Prepare header texts
         yield await stream_progress("progress", "Extracting header content")

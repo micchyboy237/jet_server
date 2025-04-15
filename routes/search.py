@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
+from jet.transformers.object import make_serializable
 from pydantic import BaseModel
 from typing import List, Dict, Any, AsyncGenerator, Tuple
 import os
@@ -217,7 +218,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
             context=context,
             model=request.llm_model,
         )
-        yield await stream_progress("LLM response generated", {"query": request.query, "response": response})
+        yield await stream_progress("LLM response generated", {"query": request.query, "response": make_serializable(response)})
 
         # Final completion message
         yield await stream_progress(

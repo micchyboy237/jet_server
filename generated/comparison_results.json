@@ -12,7 +12,7 @@
     },
     "results": [
       {
-        "id": "bab51ec5-5cc8-4d1a-a2bb-7a505a9ab70f",
+        "id": "21d4bfb7-9ce4-412d-b75f-db2b938031f7",
         "rank": 1,
         "score": 0.7926915069956999,
         "percent_difference": 0.0,
@@ -21,7 +21,7 @@
         "word_count": 63
       },
       {
-        "id": "eefe6aaa-d283-4aac-892a-8be707c441ff",
+        "id": "5754c330-564e-4c2b-a6e0-e2e54f3e8cd6",
         "rank": 2,
         "score": 0.7926667334094681,
         "percent_difference": 0.0,
@@ -30,7 +30,7 @@
         "word_count": 116
       },
       {
-        "id": "510a1038-5f27-4f1d-b77b-b7edde7d1efc",
+        "id": "94f87000-6b3c-4bf0-b771-f46f561e5bfa",
         "rank": 3,
         "score": 0.7891169441832326,
         "percent_difference": 0.45,
@@ -39,7 +39,7 @@
         "word_count": 95
       },
       {
-        "id": "fdb1986e-0229-4695-8afb-a6b7f9badefd",
+        "id": "7dfec3dc-dd36-4662-be90-d5736eb08d65",
         "rank": 4,
         "score": 0.7749507230208539,
         "percent_difference": 2.24,
@@ -48,7 +48,7 @@
         "word_count": 86
       },
       {
-        "id": "ee6259dc-4c14-4180-9043-fb1fe6fab5c2",
+        "id": "1718401a-e95a-43d1-85fc-53fd0f796454",
         "rank": 5,
         "score": 0.7725917497332112,
         "percent_difference": 2.54,
@@ -57,7 +57,7 @@
         "word_count": 502
       },
       {
-        "id": "66d5076d-1b6e-4b19-9d54-4aa77dcdb766",
+        "id": "05287399-6cc0-4902-ae0d-cde4992cc9b8",
         "rank": 6,
         "score": 0.7723629810654614,
         "percent_difference": 2.56,
@@ -66,7 +66,7 @@
         "word_count": 102
       },
       {
-        "id": "49bfa0f2-fdfb-4e87-8ab5-1c58ddcf4170",
+        "id": "4f77cea4-9bf4-45b9-bb25-9da3d4ce3934",
         "rank": 7,
         "score": 0.764758449375022,
         "percent_difference": 3.52,
@@ -75,7 +75,7 @@
         "word_count": 52
       },
       {
-        "id": "541e1fe7-971d-4d79-9345-e0d041eab697",
+        "id": "3bc4c2bc-e9e9-4351-a870-8a663aa415bb",
         "rank": 8,
         "score": 0.7644541278849794,
         "percent_difference": 3.56,
@@ -84,7 +84,7 @@
         "word_count": 94
       },
       {
-        "id": "1fb3105a-3ac3-4a32-8e33-13c0f28c8feb",
+        "id": "4c7b27d1-9216-4d95-b5ac-e99e7d1ef110",
         "rank": 9,
         "score": 0.76229988229585,
         "percent_difference": 3.83,
@@ -93,7 +93,7 @@
         "word_count": 78
       },
       {
-        "id": "d55a1c13-65b4-44f2-8229-448335bc4602",
+        "id": "e6a78f82-0782-4382-8458-2e3e1021ea3a",
         "rank": 10,
         "score": 0.7605026653807718,
         "percent_difference": 4.06,
@@ -102,7 +102,7 @@
         "word_count": 71
       },
       {
-        "id": "b03cbd66-1d1a-451b-a3e2-0f5ef3ad89d5",
+        "id": "31a4af5c-8162-4ccb-8731-49b84e7f9383",
         "rank": 11,
         "score": 0.7595461840710436,
         "percent_difference": 4.18,
@@ -111,7 +111,7 @@
         "word_count": 186
       },
       {
-        "id": "ba92af12-ecfb-4ca4-95f5-a0ba0a0d45af",
+        "id": "0cc473ee-81e1-4d5f-b7b0-4dbd6d580e8c",
         "rank": 12,
         "score": 0.7589621082877475,
         "percent_difference": 4.26,
@@ -120,7 +120,7 @@
         "word_count": 98
       },
       {
-        "id": "dd6a583f-8a45-4180-a906-83a5a082018b",
+        "id": "4a9a9659-8ff3-4ea9-88c0-bdae704bb8e8",
         "rank": 13,
         "score": 0.7556553672666417,
         "percent_difference": 4.67,
@@ -129,7 +129,7 @@
         "word_count": 99
       },
       {
-        "id": "87ea38bb-155b-4802-9652-565c67283a5b",
+        "id": "cc12196a-eb42-4b37-bec8-f5226844f12c",
         "rank": 14,
         "score": 0.7524463669129278,
         "percent_difference": 5.08,
@@ -138,7 +138,7 @@
         "word_count": 48
       },
       {
-        "id": "69de3dc8-9713-4996-a050-d886b42bb812",
+        "id": "051cbcbe-4719-468d-a43a-f0e72fb37e1f",
         "rank": 15,
         "score": 0.7500042011178729,
         "percent_difference": 5.39,
@@ -147,7 +147,7 @@
         "word_count": 57
       },
       {
-        "id": "56f279f1-b5d9-4015-8f17-1d8a5b91fdd3",
+        "id": "7faf2587-0496-4491-90c4-79220c784203",
         "rank": 16,
         "score": 0.7475082184521222,
         "percent_difference": 5.7,
@@ -156,16 +156,16 @@
         "word_count": 56
       },
       {
-        "id": "48f4775d-f442-475f-af7d-db0895cc5889",
+        "id": "a16805a5-1e99-4be6-8eb1-53d2d6e37eca",
         "rank": 17,
-        "score": 0.7470044261915656,
+        "score": 0.7470036827494092,
         "percent_difference": 5.76,
         "text": "## Live Selling Tips for Budding Filipino Online Sellers\n## Live Selling Tips for Budding Filipino Online Sellers\n### 12. Treat each live as a learning experience  \nWhen it comes to live streaming, it may take a while to get it right. Even if things don't go perfectly in your first live selling stream, don't stress about it too much.  \nIf you encounter any issues such as stumbling with your words, embrace your mistakes and just laugh about it. Chances are, people will appreciate the personality you injected into your live stream.  \nDo not get discouraged if only a few people watch your live selling stream at first. If you keep on doing high-quality live selling, more people will know about it and you can finally unlock its tremendous potential.  \nLooking for more online business ideas? Check out our comprehensive guide on how to make money online in the Philippines.  \n* * *\n\n",
-        "relevance": 1.195207081906505,
+        "relevance": 1.1952058923990547,
         "word_count": 153
       },
       {
-        "id": "65e7d57e-70ab-4090-89c3-cfc5c33a1752",
+        "id": "742de555-1b07-487f-a5f8-7a84d6e34a9e",
         "rank": 18,
         "score": 0.7457536795464734,
         "percent_difference": 5.92,
@@ -174,7 +174,7 @@
         "word_count": 66
       },
       {
-        "id": "5104fc87-ca25-4e7c-980a-8e16b87a46ff",
+        "id": "28aca7a4-0b27-4729-a24d-b5919d9cb8f3",
         "rank": 19,
         "score": 0.7435914047403585,
         "percent_difference": 6.19,
@@ -183,7 +183,7 @@
         "word_count": 72
       },
       {
-        "id": "4797fcd2-b138-4f7d-89d1-7384c577d866",
+        "id": "2c390709-7b05-4430-b798-9331cda370e4",
         "rank": 20,
         "score": 0.7399126758498538,
         "percent_difference": 6.66,
@@ -192,7 +192,7 @@
         "word_count": 82
       },
       {
-        "id": "21383d4b-32c8-4ec6-9706-ce789d1dee15",
+        "id": "fc966128-ba5e-4fd5-a631-73456574bb6f",
         "rank": 21,
         "score": 0.7364550061625443,
         "percent_difference": 7.09,
@@ -201,7 +201,7 @@
         "word_count": 127
       },
       {
-        "id": "0b428bf9-e061-4e4c-8cc0-b08dae36cd2c",
+        "id": "fbcdd6cc-851a-480a-a9e3-f5f2e6776c36",
         "rank": 22,
         "score": 0.7361452071156251,
         "percent_difference": 7.13,
@@ -210,7 +210,7 @@
         "word_count": 123
       },
       {
-        "id": "e27cd680-3409-4df3-8071-ff3198680132",
+        "id": "832c4098-a3f1-4ad2-92eb-7e45a52f708e",
         "rank": 23,
         "score": 0.7306527863159915,
         "percent_difference": 7.83,
@@ -219,7 +219,7 @@
         "word_count": 91
       },
       {
-        "id": "66e5a8e4-2773-4d94-88d7-80b139b50969",
+        "id": "b45e4508-958c-4ad1-881c-deb9e342f913",
         "rank": 24,
         "score": 0.7304583337057691,
         "percent_difference": 7.85,
@@ -228,7 +228,7 @@
         "word_count": 484
       },
       {
-        "id": "d20990ed-888d-4898-b24d-84143e36c5cc",
+        "id": "9b981fc4-3f03-40ba-8d87-9417e8f7c81c",
         "rank": 25,
         "score": 0.7283529904498866,
         "percent_difference": 8.12,
@@ -237,7 +237,7 @@
         "word_count": 101
       },
       {
-        "id": "50b2da71-8ac6-401d-85c0-258f90f1b0a9",
+        "id": "5ce30263-7628-4aee-929c-e5764fa10f4e",
         "rank": 26,
         "score": 0.7238806332299418,
         "percent_difference": 8.68,
@@ -246,7 +246,7 @@
         "word_count": 84
       },
       {
-        "id": "106bd9fc-23cb-44cd-9f8c-d612b8eacbd0",
+        "id": "e4906630-e6dd-4047-abd5-87cd42daae39",
         "rank": 27,
         "score": 0.7214974543990911,
         "percent_difference": 8.98,
@@ -255,7 +255,7 @@
         "word_count": 72
       },
       {
-        "id": "1300555e-14e3-4ec0-9eaf-1e4c72ece454",
+        "id": "795d3a11-802b-4782-814a-df3e85cc2f66",
         "rank": 28,
         "score": 0.720361311010575,
         "percent_difference": 9.12,
@@ -264,7 +264,7 @@
         "word_count": 130
       },
       {
-        "id": "5e1af3f3-63e9-44a7-9650-22d53589fe0b",
+        "id": "8b0b0453-764c-4fe1-94d7-ca9553fd8be5",
         "rank": 29,
         "score": 0.7199870002102177,
         "percent_difference": 9.17,
@@ -273,7 +273,7 @@
         "word_count": 422
       },
       {
-        "id": "fa10b76d-1c5e-40a0-bd4c-c35d7e25ea80",
+        "id": "4baf1ded-b63b-465d-9a3e-bfef9fcedfe1",
         "rank": 30,
         "score": 0.719649076971977,
         "percent_difference": 9.21,
@@ -282,7 +282,7 @@
         "word_count": 78
       },
       {
-        "id": "24e95778-8754-49cc-96ac-4d745014deea",
+        "id": "6e4b8f2f-4ec5-4525-9124-6f24229d74e6",
         "rank": 31,
         "score": 0.7160077497387658,
         "percent_difference": 9.67,
@@ -291,7 +291,7 @@
         "word_count": 73
       },
       {
-        "id": "6143aaa8-420e-43b6-8f6e-7742797d7ebf",
+        "id": "3fc08470-d014-4e2e-a535-7ee806356cae",
         "rank": 32,
         "score": 0.7129618653927372,
         "percent_difference": 10.06,
@@ -300,7 +300,7 @@
         "word_count": 81
       },
       {
-        "id": "3173021a-7528-4fdc-8f5c-76dde055ec30",
+        "id": "0db24c86-07d9-4c69-9678-1a26e32c6183",
         "rank": 33,
         "score": 0.7129018376103705,
         "percent_difference": 10.07,
@@ -309,7 +309,7 @@
         "word_count": 317
       },
       {
-        "id": "d0af30a9-15b5-4de2-ba0c-42fd87c09fed",
+        "id": "ffe14642-af17-4be5-b66b-776c3a962d5c",
         "rank": 34,
         "score": 0.7122720410973977,
         "percent_difference": 10.15,
@@ -318,7 +318,7 @@
         "word_count": 91
       },
       {
-        "id": "da9005a2-e808-45b4-bb99-abda1010981e",
+        "id": "f2453004-bfe6-4496-998f-c086eb48be2c",
         "rank": 35,
         "score": 0.7074460293745719,
         "percent_difference": 10.75,
@@ -327,7 +327,7 @@
         "word_count": 65
       },
       {
-        "id": "a214c3bd-12f3-411e-bd57-ec6fd53c6a49",
+        "id": "c0bce741-c0e2-469b-addc-b0bef8b9f9f1",
         "rank": 36,
         "score": 0.7056789493919245,
         "percent_difference": 10.98,
@@ -336,7 +336,7 @@
         "word_count": 92
       },
       {
-        "id": "4d3660af-0cdb-4f09-96c7-49f07ba32f88",
+        "id": "78126809-442b-4409-bc62-cae42b5028ff",
         "rank": 37,
         "score": 0.6952671951233982,
         "percent_difference": 12.29,
@@ -345,7 +345,7 @@
         "word_count": 331
       },
       {
-        "id": "f2fe5ad6-b3db-4795-b2a2-077815b392b6",
+        "id": "3d4ae115-d26b-41bf-a693-10654a0ac774",
         "rank": 38,
         "score": 0.6896705746397669,
         "percent_difference": 13.0,
@@ -354,7 +354,7 @@
         "word_count": 238
       },
       {
-        "id": "15c785fa-f66b-4e1a-8775-2df0d3ceccb3",
+        "id": "c1e7efc2-0b59-43a7-ab08-d1b9955556cb",
         "rank": 39,
         "score": 0.6739334802878307,
         "percent_difference": 14.98,
@@ -363,7 +363,7 @@
         "word_count": 97
       },
       {
-        "id": "fffc8a08-1101-40a4-989c-9460c834c5bc",
+        "id": "f9633c48-dbcf-4a5e-bad3-73c75f81ed80",
         "rank": 40,
         "score": 0.6264606910156976,
         "percent_difference": 20.97,
@@ -372,7 +372,7 @@
         "word_count": 31
       },
       {
-        "id": "37cd106b-f06c-4c81-8d01-48e611e45f8a",
+        "id": "a33833b7-d251-488d-891b-1c86c362c1b6",
         "rank": 41,
         "score": 0.5553213489478832,
         "percent_difference": 29.94,
@@ -381,7 +381,7 @@
         "word_count": 444
       },
       {
-        "id": "70a23f67-3d4a-4a0b-95d4-f80e8bdd9088",
+        "id": "e61634d7-7bff-4515-afa6-0771db507770",
         "rank": 42,
         "score": 0.4802255225175855,
         "percent_difference": 39.42,
@@ -390,7 +390,7 @@
         "word_count": 78
       },
       {
-        "id": "f2243093-1bc4-4058-bd63-e256e0dded60",
+        "id": "c71f89ac-be57-4327-a848-f4ead226e96f",
         "rank": 43,
         "score": 0.4704978357689997,
         "percent_difference": 40.65,
@@ -399,7 +399,7 @@
         "word_count": 75
       },
       {
-        "id": "44f8a5e5-b1b1-4a69-9ead-1312d2b21fd3",
+        "id": "1c870b06-b2ff-44e2-b068-c398cd4aeaee",
         "rank": 44,
         "score": 0.39001267566067993,
         "percent_difference": 50.8,
@@ -408,7 +408,7 @@
         "word_count": 17
       },
       {
-        "id": "56262e9a-544c-4c7f-873e-dcf3f2f8f176",
+        "id": "f8989019-5040-4ef8-824c-9bf4eedc2901",
         "rank": 45,
         "score": 0.379564218311171,
         "percent_difference": 52.12,
@@ -417,7 +417,7 @@
         "word_count": 80
       },
       {
-        "id": "cc100eb0-5a33-459d-bb60-e23dc4579e99",
+        "id": "e2c40c97-ec77-4799-a05d-57b401edbb49",
         "rank": 46,
         "score": 0.36281773715815174,
         "percent_difference": 54.23,
@@ -426,7 +426,7 @@
         "word_count": 170
       },
       {
-        "id": "918a52ad-e0cf-47c5-927a-4f965f0f0364",
+        "id": "5030c5ed-ce4d-4904-bfa3-928560c3039b",
         "rank": 47,
         "score": 0.35607893272926394,
         "percent_difference": 55.08,
@@ -435,7 +435,7 @@
         "word_count": 116
       },
       {
-        "id": "629d7d83-3c22-49c9-b8ff-aa18e8a5853e",
+        "id": "053d4488-116f-4123-852d-8fabc06de68f",
         "rank": 48,
         "score": 0.35424013356282746,
         "percent_difference": 55.31,
@@ -444,7 +444,7 @@
         "word_count": 63
       },
       {
-        "id": "15e3350b-1fdf-4460-956a-36bc3037f860",
+        "id": "c8c5051f-b4da-4a14-a84c-075d56e3e8ac",
         "rank": 49,
         "score": 0.3056364278701242,
         "percent_difference": 61.44,
@@ -453,7 +453,7 @@
         "word_count": 9
       },
       {
-        "id": "abde6f4a-9d40-4cde-9bb1-6f8bcc0b6860",
+        "id": "e5f93b90-2c16-4ce3-a3f1-0ddea859e867",
         "rank": 50,
         "score": 0.3054237270678972,
         "percent_difference": 61.47,
@@ -476,7 +476,7 @@
     },
     "results": [
       {
-        "id": "da574ad6-9079-4110-8326-4e7a8722c2d6",
+        "id": "73990da3-8f2c-4d5e-bcbc-07a37e3792cc",
         "rank": 1,
         "score": 0.732589812336196,
         "percent_difference": 0.0,
@@ -485,7 +485,7 @@
         "word_count": 236
       },
       {
-        "id": "00df3d05-e5b9-475c-a4c9-7877d80effd6",
+        "id": "accacb00-51ba-42ce-bf9b-f16424440b93",
         "rank": 2,
         "score": 0.7272957134788822,
         "percent_difference": 0.72,
@@ -494,7 +494,7 @@
         "word_count": 155
       },
       {
-        "id": "b1d0ddcf-45d3-49db-9fa2-c783af0b3e5f",
+        "id": "05bd5869-9abb-4a3b-9712-9618896aac8e",
         "rank": 3,
         "score": 0.7266624298762533,
         "percent_difference": 0.81,
@@ -503,7 +503,7 @@
         "word_count": 219
       },
       {
-        "id": "e74e69a6-d4e1-48e2-a762-8ad050615d36",
+        "id": "5e2ed35c-fd2c-4d76-b7bf-6c2d1c5afe1d",
         "rank": 4,
         "score": 0.7195611135488462,
         "percent_difference": 1.78,
@@ -512,7 +512,7 @@
         "word_count": 356
       },
       {
-        "id": "87126119-74f8-4769-9cef-a7c04ec8e0f1",
+        "id": "bc4d7a30-60a3-400b-b269-1030dc61a8c5",
         "rank": 5,
         "score": 0.7154968794181286,
         "percent_difference": 2.33,
@@ -521,7 +521,7 @@
         "word_count": 353
       },
       {
-        "id": "bc7d55f3-9acc-4663-9185-523626aebb57",
+        "id": "39b00f8a-ec4e-4511-9b3d-487031789aa4",
         "rank": 6,
         "score": 0.7011129245831489,
         "percent_difference": 4.3,
@@ -530,7 +530,7 @@
         "word_count": 58
       },
       {
-        "id": "eff00b91-652c-4ac0-9c2b-9294ef35e109",
+        "id": "62bd3662-8f68-4e84-a7ce-5c97490b962a",
         "rank": 7,
         "score": 0.6907149654489343,
         "percent_difference": 5.72,
@@ -539,7 +539,7 @@
         "word_count": 131
       },
       {
-        "id": "2163658d-323e-4296-84e3-901f2cd2d3dc",
+        "id": "450bfe82-3ae1-45a6-8eac-73d3a7847282",
         "rank": 8,
         "score": 0.6895759426416954,
         "percent_difference": 5.87,
@@ -548,7 +548,7 @@
         "word_count": 289
       },
       {
-        "id": "ff7afcb3-a27d-48b5-9997-174810c80d01",
+        "id": "c01e1980-08bb-4a89-b290-ff1cf32ede7e",
         "rank": 9,
         "score": 0.6720118968158979,
         "percent_difference": 8.27,
@@ -557,7 +557,7 @@
         "word_count": 97
       },
       {
-        "id": "5cbbd2a4-c7a4-4eea-85c8-31cb26c1d687",
+        "id": "fc4a072e-5fce-4bca-947c-14a16099cda6",
         "rank": 10,
         "score": 0.6689993326722843,
         "percent_difference": 8.68,
@@ -566,7 +566,7 @@
         "word_count": 196
       },
       {
-        "id": "d70b446a-5e56-4c6b-b44f-f8a3e6478724",
+        "id": "0b47800d-d436-4c57-a0ee-617e69e1ecbb",
         "rank": 11,
         "score": 0.6680016820215215,
         "percent_difference": 8.82,
@@ -575,7 +575,7 @@
         "word_count": 89
       },
       {
-        "id": "196b0a00-c60c-4135-8a07-03eea5f087ac",
+        "id": "e8c03fd3-24f3-430c-b9c9-69e58cda1a2e",
         "rank": 12,
         "score": 0.6660283716412152,
         "percent_difference": 9.09,
@@ -584,7 +584,7 @@
         "word_count": 92
       },
       {
-        "id": "1588a850-f8da-46d9-ad44-ba870e0ed9a4",
+        "id": "b782b4e5-f182-4c62-b9c5-da5558480812",
         "rank": 13,
         "score": 0.6612746416889623,
         "percent_difference": 9.73,
@@ -593,7 +593,7 @@
         "word_count": 178
       },
       {
-        "id": "3ad3563d-ef71-43de-bf96-f03a186f0cb1",
+        "id": "3315754f-18ed-4185-81a4-cf87ec1e14a0",
         "rank": 14,
         "score": 0.6440824537942351,
         "percent_difference": 12.08,
@@ -602,7 +602,7 @@
         "word_count": 328
       },
       {
-        "id": "e140da61-7b0d-40b4-baf6-564d449219c2",
+        "id": "dd57d531-c6b6-459d-be3d-75284a1c8e5a",
         "rank": 15,
         "score": 0.6412788274205621,
         "percent_difference": 12.46,
@@ -611,7 +611,7 @@
         "word_count": 100
       },
       {
-        "id": "ef7a9dfd-f1aa-43d1-86b2-704cd5986e89",
+        "id": "fb9b7a83-56a9-414a-ae93-f4b6a22b88ed",
         "rank": 16,
         "score": 0.6397664163094816,
         "percent_difference": 12.67,
@@ -620,7 +620,7 @@
         "word_count": 109
       },
       {
-        "id": "709afca3-4d35-4f09-9146-ee31eff4f518",
+        "id": "18f1f398-f6d8-4e2f-b715-0013a306b050",
         "rank": 17,
         "score": 0.638806394387728,
         "percent_difference": 12.8,
@@ -629,7 +629,7 @@
         "word_count": 192
       },
       {
-        "id": "cb25b9db-5f27-4e25-8dbe-43bbf3212443",
+        "id": "23b9a78e-162c-4a25-afd0-b30e919df449",
         "rank": 18,
         "score": 0.6386063954318203,
         "percent_difference": 12.83,
@@ -638,7 +638,7 @@
         "word_count": 96
       },
       {
-        "id": "49d0dd59-5af4-42cc-8ea3-475594f5403e",
+        "id": "73de850a-b9cb-4744-9bb6-26a29e345312",
         "rank": 19,
         "score": 0.6360503016251311,
         "percent_difference": 13.18,
@@ -647,7 +647,7 @@
         "word_count": 120
       },
       {
-        "id": "150fab3c-137b-4b22-9296-d0e9285c19dc",
+        "id": "5c846049-547d-4f92-a1df-f7190a0a5569",
         "rank": 20,
         "score": 0.6359522435389751,
         "percent_difference": 13.19,
@@ -656,7 +656,7 @@
         "word_count": 118
       },
       {
-        "id": "2ae6b8f7-0e69-4e55-a203-fd496e36d93a",
+        "id": "8350bf33-2a93-466e-809b-3d8075dc51ff",
         "rank": 21,
         "score": 0.6317173123174676,
         "percent_difference": 13.77,
@@ -665,7 +665,7 @@
         "word_count": 110
       },
       {
-        "id": "27c0c858-4287-4977-b041-0c2bef5aaf52",
+        "id": "aadf00db-ad29-4190-ae97-2d3b8b83bf46",
         "rank": 22,
         "score": 0.6299980200464077,
         "percent_difference": 14.0,
@@ -674,7 +674,7 @@
         "word_count": 102
       },
       {
-        "id": "a9a21e39-a78a-4952-ace7-d051690915f7",
+        "id": "d8477eb9-c1b2-4e76-add2-6df648214b09",
         "rank": 23,
         "score": 0.6293792487739032,
         "percent_difference": 14.09,
@@ -683,7 +683,7 @@
         "word_count": 103
       },
       {
-        "id": "a585f9a6-4186-435c-a6f5-8153a8548694",
+        "id": "6812fb23-21b7-48d2-b67e-fcf7599a4320",
         "rank": 24,
         "score": 0.6265023062093176,
         "percent_difference": 14.48,
@@ -692,7 +692,7 @@
         "word_count": 111
       },
       {
-        "id": "62ee1a15-c07f-45fc-bac3-fdd7f40bfbce",
+        "id": "20a0f565-e676-4bfa-9045-5417c62dd0b7",
         "rank": 25,
         "score": 0.6252072456124197,
         "percent_difference": 14.66,
@@ -701,7 +701,7 @@
         "word_count": 95
       },
       {
-        "id": "ad7e22a0-c5b4-4ba6-996c-21565e6f51f1",
+        "id": "60b827fc-d7d1-4e17-b0e1-39b46e1e061e",
         "rank": 26,
         "score": 0.6226392792233053,
         "percent_difference": 15.01,
@@ -710,7 +710,7 @@
         "word_count": 103
       },
       {
-        "id": "401b31a6-c499-4dff-ad52-fc178d953b56",
+        "id": "83150318-4fa7-493d-b25e-babf85babb2b",
         "rank": 27,
         "score": 0.6148868197362567,
         "percent_difference": 16.07,
@@ -719,7 +719,7 @@
         "word_count": 99
       },
       {
-        "id": "9d5239c0-4035-44c8-bb6a-b571e398ccf2",
+        "id": "a2858370-84ad-4af7-82d7-5bc3d791da36",
         "rank": 28,
         "score": 0.6118291220448,
         "percent_difference": 16.48,
@@ -728,7 +728,7 @@
         "word_count": 98
       },
       {
-        "id": "8a0d13e5-aef4-4420-bffe-59206da7df1e",
+        "id": "37971887-ade2-4503-88e9-a174ffdae41a",
         "rank": 29,
         "score": 0.6094318468425737,
         "percent_difference": 16.81,
@@ -737,7 +737,7 @@
         "word_count": 94
       },
       {
-        "id": "c6b4d5c9-37de-4d88-a48e-b4c86d5b7111",
+        "id": "048b3270-42f3-45e3-8b27-bb38ec66c257",
         "rank": 30,
         "score": 0.6085451778610806,
         "percent_difference": 16.93,
@@ -746,7 +746,7 @@
         "word_count": 102
       },
       {
-        "id": "5ab4c977-b230-4d89-ac21-d73a345b7573",
+        "id": "b3ee452f-7793-4482-9a78-0c1ed6236284",
         "rank": 31,
         "score": 0.606769150727435,
         "percent_difference": 17.17,
@@ -755,7 +755,7 @@
         "word_count": 91
       },
       {
-        "id": "c16872f8-765c-4a12-a10f-6cb15db670d1",
+        "id": "28a8c93c-bc43-40d9-9713-9e8cb425b459",
         "rank": 32,
         "score": 0.6014377072316939,
         "percent_difference": 17.9,
@@ -764,7 +764,7 @@
         "word_count": 81
       },
       {
-        "id": "ea4b7029-81cf-4ab0-88a3-56b77e1ac41d",
+        "id": "697822e4-09b5-45a2-970a-b5e3082fa3e4",
         "rank": 33,
         "score": 0.5280180945149212,
         "percent_difference": 27.92,
@@ -773,7 +773,7 @@
         "word_count": 92
       },
       {
-        "id": "cf3fe053-8352-471e-af87-af816e6336ca",
+        "id": "f20f6df0-ea88-45e7-a9b6-c8ead75ef30a",
         "rank": 34,
         "score": 0.4927906409603609,
         "percent_difference": 32.73,
@@ -782,7 +782,7 @@
         "word_count": 86
       },
       {
-        "id": "abfadd19-8687-490f-932d-d6fb7c006515",
+        "id": "256e66be-d1ef-484a-9d1b-374732385ba4",
         "rank": 35,
         "score": 0.467803689386822,
         "percent_difference": 36.14,
@@ -791,7 +791,7 @@
         "word_count": 92
       },
       {
-        "id": "da0b451c-7650-4e5f-99ba-6e030925090c",
+        "id": "344fe22c-d717-4252-a085-c0a4baa5ce09",
         "rank": 36,
         "score": 0.45324218566049,
         "percent_difference": 38.13,
@@ -800,7 +800,7 @@
         "word_count": 315
       },
       {
-        "id": "788c5703-ea11-45c2-83d8-bc0712f942d6",
+        "id": "9f452d76-6166-4afc-b644-43e8df6c3dc3",
         "rank": 37,
         "score": 0.43617067095520073,
         "percent_difference": 40.46,
@@ -809,7 +809,7 @@
         "word_count": 92
       },
       {
-        "id": "87e27c34-52a4-472b-82b2-93f31409850e",
+        "id": "ed994089-6a88-40fe-bad8-9df33dd1d03c",
         "rank": 38,
         "score": 0.4148255116554778,
         "percent_difference": 43.38,
@@ -818,7 +818,7 @@
         "word_count": 100
       },
       {
-        "id": "60afa07d-d743-44fc-bd11-94c056b07deb",
+        "id": "06bff76c-a340-4a20-9357-34235fddf113",
         "rank": 39,
         "score": 0.41202891647799966,
         "percent_difference": 43.76,
@@ -827,7 +827,7 @@
         "word_count": 77
       },
       {
-        "id": "6f03be51-2cfb-4940-8fbc-9f2a67d7bcde",
+        "id": "3e15f37f-ff5a-4598-ad0a-fffc13b939c7",
         "rank": 40,
         "score": 0.3988577584113105,
         "percent_difference": 45.56,
@@ -836,7 +836,7 @@
         "word_count": 73
       },
       {
-        "id": "b94922d3-1247-4097-a9c1-b0f81f34a1d9",
+        "id": "775ac20e-acbf-4b79-812e-8f1e0aae0000",
         "rank": 41,
         "score": 0.39861112566037216,
         "percent_difference": 45.59,
@@ -845,7 +845,7 @@
         "word_count": 82
       },
       {
-        "id": "24378ff4-9773-4d08-8482-9d5637f8cc89",
+        "id": "e2dddf21-8f6a-43b2-9a03-ca87437a1817",
         "rank": 42,
         "score": 0.39699001660621597,
         "percent_difference": 45.81,
@@ -854,7 +854,7 @@
         "word_count": 85
       },
       {
-        "id": "860a62b3-aa8d-4437-83ad-19088329d8b0",
+        "id": "0849881c-a0de-43eb-859a-f873f2199625",
         "rank": 43,
         "score": 0.3860844282020168,
         "percent_difference": 47.3,
@@ -863,7 +863,7 @@
         "word_count": 64
       },
       {
-        "id": "ec8b75d8-64ce-4b7d-bcb6-00453e230aab",
+        "id": "e7841364-f9dc-4277-96c0-edde9dee4656",
         "rank": 44,
         "score": 0.3855499829694774,
         "percent_difference": 47.37,
@@ -872,16 +872,16 @@
         "word_count": 96
       },
       {
-        "id": "1405775e-f0aa-401c-a6c1-4fdbf7c949ac",
+        "id": "8afb2bde-49d5-4d89-b403-20e40aef0dc4",
         "rank": 45,
-        "score": 0.38303867045490214,
-        "percent_difference": 47.71,
+        "score": 0.3832883888438537,
+        "percent_difference": 47.68,
         "text": "## What are the products that are no longer trending in 2025?\n## What are the products that are no longer trending in 2025?\n### 11. Custom mouse pads  \nGlobal Search Growth: -40% (YoY)  \nMonthly Search Volume: 33.1K  \nWhat is it?  \nWith the sheer number of people using desktop computers, custom mouse pads have quite a bit of appeal. Create and apply your own custom designs or take it further by crafting mouse pads for specific uses, like gaming.\n\n",
-        "relevance": 0.45964640454588257,
+        "relevance": 0.4599460666126244,
         "word_count": 79
       },
       {
-        "id": "34a12af2-bb79-48ab-9045-600495a12058",
+        "id": "f63d8dc0-363b-4956-a920-9f299c4df074",
         "rank": 46,
         "score": 0.37803962331106006,
         "percent_difference": 48.4,
@@ -890,7 +890,7 @@
         "word_count": 15
       },
       {
-        "id": "42473539-dc29-4f96-b1ad-4ad8c394c097",
+        "id": "e32f6f3f-ffd8-433f-854c-0786993a83ae",
         "rank": 47,
         "score": 0.3705806065839892,
         "percent_difference": 49.41,
@@ -899,7 +899,7 @@
         "word_count": 136
       },
       {
-        "id": "2385c83d-8eb3-4bec-9955-5d39a8227c9d",
+        "id": "eff010e6-d158-4ac5-93c8-a6b61c6709e7",
         "rank": 48,
         "score": 0.3620119267054376,
         "percent_difference": 50.58,
@@ -908,7 +908,7 @@
         "word_count": 71
       },
       {
-        "id": "9f0175f1-770e-4272-827d-1ede186d69b4",
+        "id": "11f78bb3-9b4e-4ad5-95b6-558987e73f47",
         "rank": 49,
         "score": 0.3589139618737588,
         "percent_difference": 51.01,
@@ -917,7 +917,7 @@
         "word_count": 78
       },
       {
-        "id": "048982e7-42e9-4ce0-aa3b-a58a2c5ab590",
+        "id": "7d6d4730-7bdb-4300-a3b9-ce967241489c",
         "rank": 50,
         "score": 0.35226346384187357,
         "percent_difference": 51.92,
@@ -926,7 +926,7 @@
         "word_count": 22
       },
       {
-        "id": "6bddee1e-79b6-49e9-9775-83d98fa01cad",
+        "id": "35dbeed4-1bc3-4041-863b-b26d26d62b2f",
         "rank": 51,
         "score": 0.34640602494609946,
         "percent_difference": 52.71,
@@ -942,14 +942,14 @@
     "url": "https://richestph.com/the-future-of-live-selling-in-the-philippines-tips-tricks-to-maximize-your-revenue",
     "info": {
       "top_score": 1.0,
-      "avg_top_score": 0.9511263036860973,
+      "avg_top_score": 0.9513210109136712,
       "median_score": 0.9426033644898223,
       "num_results": 37,
-      "avg_word_count": 120.05405405405405
+      "avg_word_count": 120.35135135135135
     },
     "results": [
       {
-        "id": "48bff27b-f9cb-49e6-afef-378203820920",
+        "id": "745752d4-8dad-490c-9036-b1a8f32296cc",
         "rank": 1,
         "score": 0.8233038966118881,
         "percent_difference": 0.0,
@@ -958,7 +958,7 @@
         "word_count": 150
       },
       {
-        "id": "9111659c-97df-495d-a770-e3da1a0f6724",
+        "id": "f85bad0d-bc3a-490e-8a03-af8f1027335d",
         "rank": 2,
         "score": 0.820639390764442,
         "percent_difference": 0.32,
@@ -967,7 +967,7 @@
         "word_count": 304
       },
       {
-        "id": "b6bf39b1-9026-41ac-ae1b-99c256374cea",
+        "id": "bf3cd877-7bac-4514-a482-ac4eb86e4264",
         "rank": 3,
         "score": 0.7978483732092532,
         "percent_difference": 3.09,
@@ -976,7 +976,7 @@
         "word_count": 180
       },
       {
-        "id": "20e8451f-d53c-41a2-ab4a-63549a4080c5",
+        "id": "1859440f-0867-44e8-a9f9-7b119a16c2a3",
         "rank": 4,
         "score": 0.7968937478143185,
         "percent_difference": 3.21,
@@ -985,7 +985,7 @@
         "word_count": 325
       },
       {
-        "id": "3a891124-8134-439f-915e-2422c17f8f16",
+        "id": "c8da2b5d-09f9-41e3-bc9d-cb76c5099ad2",
         "rank": 5,
         "score": 0.7808697055447833,
         "percent_difference": 5.15,
@@ -994,7 +994,7 @@
         "word_count": 139
       },
       {
-        "id": "f400c29d-0e1c-42fa-9949-b5da42081495",
+        "id": "b49c1ee5-1f20-406f-8fce-e37f498fe88a",
         "rank": 6,
         "score": 0.7712283403431097,
         "percent_difference": 6.33,
@@ -1003,8 +1003,17 @@
         "word_count": 267
       },
       {
-        "id": "790208ca-aab8-4005-8656-f7638f9b1491",
+        "id": "680a781e-9725-44b9-9dfc-047fbca6b58d",
         "rank": 7,
+        "score": 0.7670046136915355,
+        "percent_difference": 6.84,
+        "text": "# The Future of Live Selling in the Philippines: Tips & Tricks to Maximize Your Revenue\n# The Future of Live Selling in the Philippines: Tips & Tricks to Maximize Your Revenue\n## Top Business Stories  \nBusiness Ideas\n\n\nTindahan Ni Juan 2.0: Modernizing the Corner Store for Online Ordering and Delivery\nFilipino Entrepreneurs: Start a Profitable Pre-Loved Clothing Business Online\nUnlock Your Entrepreneurial Potential: Top 20 Profitable Business Ideas in the Philippines\nYour Dream Franchise Awaits: How to Choose the Right Business for You (Philippines)\nLow Investment, High Profit: Franchising Opportunities for Every Budget in the Philippines\nSolve a Problem, Earn Profits: Developing a Niche Mobile App for the Filipino Market\nFor Inquiries\nOwn A School? Franchising Can Help You Grow!\nUpcycled Furniture Design: Turn Trash into Treasure with This Creative Business\nUnlock Your E-Commerce Revenue Now, Philippines!\nShould You Get a Business Loan to Finance Your Franchise? What Experts Say\nVirtual Assistant Venture: Provide Services & Build Passive Income Streams\nPhilippines, Ready To Thrive Online?\nFind Your Perfect Condo With Ample Storage\nFrom Dream to Reality: Building on Your Own Philippine Residential Lot\nLocation, Location, Location: Choosing the Best Condo Neighborhood in the Philippines\nWhy Some Filipinos Regret Buying a House Instead of Investing in a Business\nHouse and Lot Hunting in the Philippines: Unlocking the Best Neighborhoods for Value\nLand Banking Strategies: Building Long-Term Wealth Through Philippine Real Estate.",
+        "relevance": 1.2272073819064568,
+        "word_count": 231
+      },
+      {
+        "id": "be0fc615-1b7a-4bb4-baff-765b9cfc80ed",
+        "rank": 8,
         "score": 0.7659356099698046,
         "percent_difference": 6.97,
         "text": "# The Future of Live Selling in the Philippines: Tips & Tricks to Maximize Your Revenue\n# The Future of Live Selling in the Philippines: Tips & Tricks to Maximize Your Revenue\n### What's Next? Emerging Trends to Watch  \nThe future of live selling in the Philippines is bright, with several emerging trends poised to shape the industry.  \nAI and Automation: Artificial intelligence (AI) is already being used to enhance live selling experiences. AI-powered chatbots can answer customer questions, provide product recommendations, and even process orders automatically. AI can also be used to analyze data and personalize live streams for individual viewers.\nAR and VR Integration: Augmented reality (AR) and virtual reality (VR) technologies are becoming increasingly accessible and affordable. AR can allow customers to try on clothes virtually or see how furniture would look in their homes during a live stream. VR can create immersive shopping experiences that transport viewers to virtual stores or showrooms.\nLivestream Shopping Becoming More Immersive: Expect improved user experiences with seamless interactions, better video quality, and more engaging content formats. High-definition streaming, interactive Q&As, and gamified elements within the broadcast will hold viewers' attention longer.\nPersonalized Shopping Experiences: As data analysis becomes more sophisticated, live streams will be tailored to individual viewers' preferences, enhancing customer satisfaction and driving sales. Expect personalized recommendations and exclusive offers to each shopper.\nCross-border Live Selling: As logistics and payment systems become more streamlined, businesses will be able to reach customers in other countries through live selling. This opens up new opportunities for growth and expansion, particularly for businesses that sell unique or niche products. The Philippines, with its large diaspora, stands to greatly benefit from this cross-border trend.\nIncreased focus on authenticity: As live selling becomes more mainstream, customers are looking for authentic and genuine experiences. Sellers who can connect with their audience on a personal level and build trust will be the ones who succeed in the long run.\n\n",
@@ -1012,16 +1021,7 @@
         "word_count": 322
       },
       {
-        "id": "0ed3391a-e728-426c-abdb-9a4bc08dce01",
-        "rank": 8,
-        "score": 0.7654015814999352,
-        "percent_difference": 7.03,
-        "text": "# The Future of Live Selling in the Philippines: Tips & Tricks to Maximize Your Revenue\n# The Future of Live Selling in the Philippines: Tips & Tricks to Maximize Your Revenue\n## Top Business Stories  \nBusiness Ideas\n\n\nPeso Powerhouse: Become a Successful Freelance Virtual Assistant in the Philippines\nBest Franchise Opportunities in the Philippines Under P500,000\nPlanting & Selling Ornamental Plants: A Green Business Opportunity for Filipinos\nProfitable Franchises for Filipinos: Build a Successful Business Today\nMobile Car Wash Service: Bring Convenience to Your Customer's Driveway\nBuild Your Empire: Top Franchises Offering Growth Potential in the Philippines\nFor Inquiries\nBecome a Mobile Phone Repair Rockstar: A Beginner's Guide for Filipinos\nPinoy Sports Fan? Start Your Own Franchise!\nConquer Your Financial Goals: Launch a Successful Filipino Business Now\nThe Ultimate List: Negosyong Franchise Para sa Pinoy\nAre You Ready To Be A Boss In The Philippines?\nHow to Market Your Business Without Spending a Fortune on Ads\nLegazpi Real Estate: Is It the Next Major Boom for Philippine Investors?\nPhilippine Single Family Rentals: Grow Your Wealth\nBeyond the Price Tag: Hidden Costs to Consider When Buying a Home in the Philippines\nBuilding Your Dream Home in the Philippines: Costs, Pitfalls, and Pro Tips\nWhy Some Filipinos Regret Buying a House Near Their Relatives\nLocation, Location, Location: Spotting the Next Hot Spots for House and Lot Investments",
-        "relevance": 1.1481023722499029,
-        "word_count": 226
-      },
-      {
-        "id": "6cfa3e39-c209-4bcb-b31a-cb70205a1274",
+        "id": "931c8735-e042-4741-80ca-5eba25986c92",
         "rank": 9,
         "score": 0.7562648050855747,
         "percent_difference": 8.14,
@@ -1030,7 +1030,7 @@
         "word_count": 774
       },
       {
-        "id": "e1d1eb6d-0685-42f1-abd3-89ea96ea6fcc",
+        "id": "58545598-bb4c-4cf6-98cb-d1c4fb81bddc",
         "rank": 10,
         "score": 0.7522744691051501,
         "percent_difference": 8.63,
@@ -1039,7 +1039,7 @@
         "word_count": 223
       },
       {
-        "id": "9c1fa948-0b2f-43c5-a982-43b4daf789c4",
+        "id": "7dbe5175-fce6-4b21-962d-da8a6c0a6824",
         "rank": 11,
         "score": 0.7402626397441308,
         "percent_difference": 10.09,
@@ -1048,134 +1048,125 @@
         "word_count": 206
       },
       {
-        "id": "754c4763-105f-4063-a54b-3307e99a0928",
+        "id": "add2a8a0-4b8c-4abf-a640-17867e7cf9d2",
         "rank": 12,
-        "score": 0.6317972298487412,
-        "percent_difference": 23.26,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Building Your Dream Home in the Philippines: Costs, Pitfalls, and Pro Tips  \nApril 15, 2025\n\n",
-        "relevance": 0.3942414714256145,
-        "word_count": 24
+        "score": 0.6605602892567957,
+        "percent_difference": 19.77,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Unlock Your E-Commerce Revenue Now, Philippines!  \nMarch 25, 2025\n\n",
+        "relevance": 0.28536204495893575,
+        "word_count": 18
       },
       {
-        "id": "dc592d67-024f-4f1a-a5f6-9a3b8a878c33",
+        "id": "40590879-113e-4ff4-a3a7-ed101173efe2",
         "rank": 13,
-        "score": 0.6177191782074656,
-        "percent_difference": 24.97,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Beyond the Price Tag: Hidden Costs to Consider When Buying a Home in the Philippines  \nApril 1, 2025\n\n",
-        "relevance": 0.4002820274784377,
-        "word_count": 27
+        "score": 0.6396249148750822,
+        "percent_difference": 22.31,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Filipino Entrepreneurs: Start a Profitable Pre-Loved Clothing Business Online  \nWant to start your own business in the Philippines without breaking the bank? Selling pre-loved clothes online is a fantastic option! It's affordable to start, taps into the growing trend of sustainable fashion, and has a huge potential market right here in the Philippines. Let's dive into how you can turn this into a profitable venture. Why Pre-Loved Clothing is a Winner in the Philippines First things first, why should you even consider selling pre-loved clothes? Well, several factors make it a smart business move in the Philippine context. One major reason is affordability. Many Filipinos are looking for  \nRead More >>  \nBusiness Ideas\n\n",
+        "relevance": 0.8954748808251151,
+        "word_count": 122
       },
       {
-        "id": "f5a5a5c9-b49d-43c8-a14c-0c523e67e2f0",
+        "id": "7bb67410-c44a-4d56-823b-d4d62bef1064",
         "rank": 14,
-        "score": 0.5881718303190239,
-        "percent_difference": 28.56,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Conquer Your Financial Goals: Launch a Successful Filipino Business Now  \nApril 15, 2025\n\n",
-        "relevance": 0.28467516587440755,
-        "word_count": 22
+        "score": 0.6384142290609338,
+        "percent_difference": 22.46,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Unlock Your Entrepreneurial Potential: Top 20 Profitable Business Ideas in the Philippines  \nReady to be your own boss? The Philippines is brimming with opportunities for aspiring entrepreneurs. This guide unveils 20 profitable business ideas tailored for the Filipino market, offering practical insights to get you started on your journey to success. Online Selling: Your Storefront to the World Online selling is a booming business in the Philippines, especially with the increasing internet penetration. More and more Filipinos are shopping online for convenience and variety. Platforms like Shopee and Lazada are already popular, but you can also create your own website or utilize social media like Facebook and Instagram. What to sell?  \nRead More >>  \nFranchising\n\n",
+        "relevance": 0.8937799206853073,
+        "word_count": 124
       },
       {
-        "id": "102420f5-501f-4f7a-addb-a7c991a65dcf",
+        "id": "1078fba7-35ac-4c84-84f9-825037d5d563",
         "rank": 15,
-        "score": 0.5689484771521773,
-        "percent_difference": 30.89,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Legazpi Real Estate: Is It the Next Major Boom for Philippine Investors?  \nApril 1, 2025\n\n",
-        "relevance": 0.3277143228396541,
-        "word_count": 24
+        "score": 0.6175321720718334,
+        "percent_difference": 24.99,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Philippines, Ready To Thrive Online?  \nMarch 28, 2025  \n* Real Estate\n* Business\n* Finance\n* Infrastructure\n* Tourism\n* EV Insights\n* Solar Home  \n* Real Estate\n* Business\n* Finance\n* Infrastructure\n* Tourism\n* EV Insights\n* Solar Home  \nRECOMMENDED POSTS\n\n",
+        "relevance": 0.8027918236933834,
+        "word_count": 53
       },
       {
-        "id": "523c57eb-95dc-4d70-ad8c-d4eba9369a2f",
+        "id": "038c134a-5c66-4cc9-b5ff-96f660c421f0",
         "rank": 16,
-        "score": 0.5667949082280697,
-        "percent_difference": 31.16,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Become a Mobile Phone Repair Rockstar: A Beginner's Guide for Filipinos  \nApril 3, 2025\n\n",
-        "relevance": 0.31287078934189444,
+        "score": 0.6025918314100509,
+        "percent_difference": 26.81,
+        "text": "## Top Business Stories\n## Top Business Stories\n### House and Lot Hunting in the Philippines: Unlocking the Best Neighborhoods for Value  \nMarch 30, 2025\n\n",
+        "relevance": 0.3916846904165331,
+        "word_count": 25
+      },
+      {
+        "id": "fd955922-263f-41c1-a836-c3f2cdc77f83",
+        "rank": 17,
+        "score": 0.5785620260737254,
+        "percent_difference": 29.73,
+        "text": "## Top Business Stories\n## Top Business Stories\n### From Dream to Reality: Building on Your Own Philippine Residential Lot  \nApril 3, 2025\n\n",
+        "relevance": 0.2927523851933051,
         "word_count": 23
       },
       {
-        "id": "fdffa481-2de1-4edb-a44d-e452d9ea6704",
-        "rank": 17,
-        "score": 0.5657049278066147,
-        "percent_difference": 31.29,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Best Franchise Opportunities in the Philippines Under P500,000  \nLooking to start your own business in the Philippines without breaking the bank? Franchising can be a great option, especially if you're working with a budget of under P500,000. This article will explore some awesome franchise opportunities that fit that price range, giving you a head start on your entrepreneurial journey. Food Cart Franchises: A Filipino Favorite Filipinos love to eat, and food carts are everywhere! One of the most popular and potentially profitable options under P500,000 is a food cart franchise. Why? Because the initial investment is generally lower compared to a full-blown restaurant franchise. They're also relatively  \nRead More >>  \nBusiness Ideas\n\n",
-        "relevance": 0.6222754205872763,
-        "word_count": 121
-      },
-      {
-        "id": "c9dd9002-511a-4529-a1bc-6d75221a1b11",
+        "id": "eb4828a2-ad3e-4667-89b7-b30f1ae9a5c1",
         "rank": 18,
-        "score": 0.551481769472947,
-        "percent_difference": 33.02,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Planting & Selling Ornamental Plants: A Green Business Opportunity for Filipinos  \nThinking of starting a business in the Philippines? Consider the beauty of ornamental plants! Planting and selling them can be a surprisingly profitable venture. People are increasingly drawn to adding greenery to their homes and offices, creating a strong demand for these decorative plants. With a little know-how, some space, and dedication, you could cultivate a thriving business that's both green and rewarding. Why Ornamental Plants? A Growing Market in the Philippines Ornamental plants aren't just pretty to look at; they're a booming business! The demand is driven by several factors. First, there's increased urbanization. As more Filipinos move  \nRead More >>  \nFranchising\n\n",
-        "relevance": 0.7169263003148312,
-        "word_count": 123
+        "score": 0.5664048361759548,
+        "percent_difference": 31.2,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Low Investment, High Profit: Franchising Opportunities for Every Budget in the Philippines  \nWant to start your own business in the Philippines, but worried about the cost? Franchising might be the perfect answer! It lets you use a well-known brand and a proven system, so you're not starting from scratch. The best part? There are tons of affordable options out there, so you don't need a millionaire's budget to become your own boss. Let's dive into some awesome low-investment, high-profit franchising opportunities in the Philippines. Why Franchising in the Philippines is a Smart Move Think of franchising like buying a ready-made business. You're not just getting a name; you're getting a plan,  \nRead More >>  \nBusiness Ideas\n\n",
+        "relevance": 0.6796858034111458,
+        "word_count": 125
       },
       {
-        "id": "db10d778-14e9-4ed2-a963-a29f9a0a9ead",
+        "id": "a2d537e5-6a11-41b7-923b-e75af2d773b2",
         "rank": 19,
-        "score": 0.5513785257052601,
-        "percent_difference": 33.03,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Philippine Single Family Rentals: Grow Your Wealth  \nMarch 25, 2025\n\n",
-        "relevance": 0.23047622374479876,
-        "word_count": 19
+        "score": 0.5647924599621008,
+        "percent_difference": 31.4,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Land Banking Strategies: Building Long-Term Wealth Through Philippine Real Estate.  \nApril 10, 2025\n\n",
+        "relevance": 0.2733595506216568,
+        "word_count": 22
       },
       {
-        "id": "cefab97d-a34c-43e6-947e-d9fd62dde10e",
+        "id": "42ea17b4-6fbb-4934-b119-ab741833f660",
         "rank": 20,
-        "score": 0.5436547593774863,
-        "percent_difference": 33.97,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Why Some Filipinos Regret Buying a House Near Their Relatives  \nMarch 28, 2025\n\n",
-        "relevance": 0.2631289035387034,
-        "word_count": 22
+        "score": 0.5516282802827437,
+        "percent_difference": 33.0,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Location, Location, Location: Choosing the Best Condo Neighborhood in the Philippines  \nApril 1, 2025\n\n",
+        "relevance": 0.30449881071607454,
+        "word_count": 23
       },
       {
-        "id": "c8fc7654-fe4d-4fa3-9d0f-5b917e50fb5a",
+        "id": "e2395930-a24d-41bb-8056-77a84549cdec",
         "rank": 21,
-        "score": 0.5420778091942186,
-        "percent_difference": 34.16,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Profitable Franchises for Filipinos: Build a Successful Business Today  \nWant to start your own business but worried about the risks? Franchising might be the answer! It lets you run a business with a proven track record, giving you a head start compared to starting from scratch. In this article, we'll explore franchise opportunities in the Philippines perfect for Filipinos looking to build their own successful ventures. Why Franchising is a Great Option for Filipinos Franchising offers many advantages, especially for first-time business owners. When you buy a franchise, you're not just buying a business name; you're buying a system. This system has been tested and refined, meaning you're  \nRead More >>  \nBusiness Ideas\n\n",
-        "relevance": 0.6504933710330623,
-        "word_count": 122
+        "score": 0.538428285706143,
+        "percent_difference": 34.6,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Why Some Filipinos Regret Buying a House Instead of Investing in a Business  \nMarch 28, 2025\n\n",
+        "relevance": 0.2961355571383787,
+        "word_count": 25
       },
       {
-        "id": "ebfa4a2d-939d-414c-93ff-5730dc8aab0a",
+        "id": "772cef5c-7d8c-44c6-9955-5bb25c8db803",
         "rank": 22,
-        "score": 0.5339706582016391,
-        "percent_difference": 35.14,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Are You Ready To Be A Boss In The Philippines?  \nMarch 25, 2025\n\n",
-        "relevance": 0.28193650753046545,
-        "word_count": 22
+        "score": 0.5336630394041311,
+        "percent_difference": 35.18,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Tindahan Ni Juan 2.0: Modernizing the Corner Store for Online Ordering and Delivery  \nEver dreamed of running your own business? In the Philippines, the trusty \"Tindahan ni Juan\" (Juan's Store) is a familiar sight - that little corner store that's always there when you need a quick snack, some rice, or even load for your phone. But what if we could take this classic Filipino staple and give it a modern twist? \"Tindahan ni Juan 2.0\" is all about bringing the corner store online with ordering and delivery, making it even more convenient and profitable. Let's dive into why this is a winning idea and how you can make it happen. Why  \nRead More >>  \nBusiness Ideas\n\n",
+        "relevance": 0.7471282551657834,
+        "word_count": 126
       },
       {
-        "id": "41c9bc89-c81b-4909-8c32-fff95ddade3e",
+        "id": "109733c3-b90f-419c-a597-8e7e0fa17661",
         "rank": 23,
-        "score": 0.5111015508306449,
-        "percent_difference": 37.92,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Peso Powerhouse: Become a Successful Freelance Virtual Assistant in the Philippines  \nWant to earn dollars from your laptop right here in the Philippines? Becoming a Freelance Virtual Assistant (VA) is a fantastic opportunity. It's a flexible, in-demand skill that can significantly boost your income while allowing you to work from home, a coffee shop, or even while traveling. Let's explore how you can transform your skills into a peso powerhouse! What Exactly Does a Freelance Virtual Assistant Do? Imagine a super-organized, tech-savvy helper who can do almost anything online. That's essentially what a Virtual Assistant is! Instead of working in an office, VAs provide assistance to clients remotely, typically businesses  \nRead More >>  \nFranchising\n\n",
-        "relevance": 0.6644320160798384,
-        "word_count": 123
+        "score": 0.5199661184228719,
+        "percent_difference": 36.84,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Your Dream Franchise Awaits: How to Choose the Right Business for You (Philippines)  \nThinking of starting your own business in the Philippines but don't know where to begin? Franchising might be the perfect answer! It's like having a ready-made business with a proven track record. This guide will walk you through finding the right franchise for you, specifically tailored to the Philippine market. Understanding the Appeal of Franchising in the Philippines Why are franchises so popular here? Well, the Philippines has a vibrant entrepreneurial spirit, and franchising offers a less daunting route to business ownership. Instead of starting from scratch, you're leveraging an established brand, a tested business model, and ongoing support.  \nRead More >>  \nFranchising\n\n",
+        "relevance": 0.6239593421074462,
+        "word_count": 125
       },
       {
-        "id": "9f4fc83d-0a93-4f70-a949-b5ce1681a4bc",
+        "id": "fb767a66-9c3b-466b-ad65-20c8bbc504d1",
         "rank": 24,
-        "score": 0.5087995942972936,
-        "percent_difference": 38.2,
-        "text": "## Top Business Stories\n## Top Business Stories\n### The Ultimate List: Negosyong Franchise Para sa Pinoy  \nApril 1, 2025\n\n",
-        "relevance": 0.22387182149080923,
-        "word_count": 20
+        "score": 0.5101206378705778,
+        "percent_difference": 38.04,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Solve a Problem, Earn Profits: Developing a Niche Mobile App for the Filipino Market  \nWant to make money by solving a problem that many Filipinos face every day? Consider creating a niche mobile app! This isn't some vague idea; it's a concrete way to build a profitable business by addressing a specific need. Let's dive into how you can find that need and turn it into a successful app. Finding Your Niche - What Problems Can You Solve? The first step is identifying a problem. Think about the everyday struggles people in your community experience. What are they complaining about online? What services are difficult to access? What processes are inefficient? Don't just  \nRead More >>\n\n",
+        "relevance": 0.6121447654446933,
+        "word_count": 125
       },
       {
-        "id": "5e07c2ba-a87a-4c0f-8a75-943b68702d63",
+        "id": "50eccd3c-63a6-4bc2-9b78-6b227d6c54e0",
         "rank": 25,
-        "score": 0.501912973287553,
-        "percent_difference": 39.04,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Build Your Empire: Top Franchises Offering Growth Potential in the Philippines  \nWant to be your own boss and rake in the profits? Franchising in the Philippines is a growing trend and a great way to start a business with a proven track record. You're buying into a system that already works, which significantly reduces the risk of failure. This article dives into some fantastic franchise opportunities in the Philippines that offer good growth potential. Why Franchise? Is It Really Worth It? Let's be honest, starting a business from scratch is tough. You need to come up with a unique idea, build a brand, figure out marketing, and basically learn everything  \nRead More >>\n\n",
-        "relevance": 0.5521042706163084,
-        "word_count": 122
-      },
-      {
-        "id": "26315ac9-4614-4801-9fd2-c09fa4215be8",
-        "rank": 26,
         "score": 0.49394775456638923,
         "percent_difference": 40.0,
         "text": "### References\n### References\n#### Thim  \nWhat started as a simple hobby has grown into my way of giving back--sharing free, valuable content to help Filipinos navigate wealth, health, freedom, and success. I believe knowledge should be for everyone, and my goal is to inspire, educate, and empower you to make smart, confident decisions on your journey to success.  \nSupport our work  \nMessage us!\n\n",
@@ -1183,44 +1174,17 @@
         "word_count": 64
       },
       {
-        "id": "bc271b89-1bb3-4490-b0a8-b307f093af2a",
+        "id": "30e32bfc-b67e-478e-b1e1-f731e5221280",
+        "rank": 26,
+        "score": 0.4366220709063858,
+        "percent_difference": 46.97,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Virtual Assistant Venture: Provide Services & Build Passive Income Streams  \nApril 15, 2025\n\n",
+        "relevance": 0.21132508231869074,
+        "word_count": 22
+      },
+      {
+        "id": "1a172a72-d653-4b6d-879e-2a2ba79362c7",
         "rank": 27,
-        "score": 0.49136646444114174,
-        "percent_difference": 40.32,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Mobile Car Wash Service: Bring Convenience to Your Customer's Driveway  \nThinking of starting a business in the Philippines? A mobile car wash service could be your ticket to success! With the increasing number of car owners wanting convenience, bringing the car wash to their doorstep is a great opportunity. This guide will show you how to make this idea a profitable reality. Why Mobile Car Wash in the Philippines? Convenience is King! The Philippines is a growing market for cars. As more Filipinos can afford vehicles, the demand for car care services also increases. The problem? Many people are busy and finding time to visit a traditional car wash  \nRead More >>  \nFranchising\n\n",
-        "relevance": 0.58963975732937,
-        "word_count": 122
-      },
-      {
-        "id": "83182617-45d8-4426-bfc1-935c0555e282",
-        "rank": 28,
-        "score": 0.4753766341738505,
-        "percent_difference": 42.26,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Pinoy Sports Fan? Start Your Own Franchise!  \nMarch 25, 2025\n\n",
-        "relevance": 0.19870743308466954,
-        "word_count": 19
-      },
-      {
-        "id": "8be270e2-759a-4cca-92a7-28de1a86dcb4",
-        "rank": 29,
-        "score": 0.45275685124815357,
-        "percent_difference": 45.01,
-        "text": "## Top Business Stories\n## Top Business Stories\n### How to Market Your Business Without Spending a Fortune on Ads  \nMarch 28, 2025  \n* Real Estate\n* Business\n* Finance\n* Infrastructure\n* Tourism\n* EV Insights\n* Solar Home  \n* Real Estate\n* Business\n* Finance\n* Infrastructure\n* Tourism\n* EV Insights\n* Solar Home  \nRECOMMENDED POSTS\n\n",
-        "relevance": 0.5433082214977842,
-        "word_count": 59
-      },
-      {
-        "id": "1f718a50-10c9-43bf-a3b9-fdbd21db8cb5",
-        "rank": 30,
-        "score": 0.4428176531026688,
-        "percent_difference": 46.21,
-        "text": "## Top Business Stories\n## Top Business Stories\n### Location, Location, Location: Spotting the Next Hot Spots for House and Lot Investments  \nMarch 30, 2025\n\n",
-        "relevance": 0.26569059186160127,
-        "word_count": 25
-      },
-      {
-        "id": "ded6e14c-c97b-4fdc-a71c-5f0928e88061",
-        "rank": 31,
         "score": 0.419998149376565,
         "percent_difference": 48.99,
         "text": "#### Categories\n#### Categories\n###### BUSINESS  \n* Franchising\n* Business Challenges\n* Business Promotion and Marketing\n* E-commerce and Digital Business  \n* Franchising\n* Business Challenges\n* Business Promotion and Marketing\n* E-commerce and Digital Business  \nRECOMMENDED POSTS\n\n",
@@ -1228,8 +1192,8 @@
         "word_count": 38
       },
       {
-        "id": "69d0bf46-c6df-4268-ad23-a455c20a1f38",
-        "rank": 32,
+        "id": "513221fd-3858-47d5-86a9-219aadbe678c",
+        "rank": 28,
         "score": 0.4126942334060981,
         "percent_difference": 49.87,
         "text": "### For Inquiries\n### For Inquiries\n#### Categories  \n* Real Estate\n* Business\n* Finance\n* Infrastructure\n* Innovation\n* Health\n* General Challenges\n* Tourism  \n* Real Estate\n* Business\n* Finance\n* Infrastructure\n* Innovation\n* Health\n* General Challenges\n* Tourism  \n2021 RICHESTPH.COM | ALL RIGHTS RESERVED\n\n\nBUSINESS",
@@ -1237,8 +1201,17 @@
         "word_count": 51
       },
       {
-        "id": "37323ae7-7f58-4349-a298-edb867486195",
-        "rank": 33,
+        "id": "597c53e7-5a52-4e1b-8dce-4a6655ce2e23",
+        "rank": 29,
+        "score": 0.4051797698989342,
+        "percent_difference": 50.79,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Find Your Perfect Condo With Ample Storage  \nMarch 17, 2025\n\n",
+        "relevance": 0.1693651438177545,
+        "word_count": 19
+      },
+      {
+        "id": "cf508535-b7e8-4082-ab4e-befbff6dc93c",
+        "rank": 30,
         "score": 0.3857580402096948,
         "percent_difference": 53.15,
         "text": "### References\n### References\n#### Disclaimer  \nThe content on RichestPH.com is for educational purposes only and should not be considered financial, investment, legal, or professional advice. We are not liable for any decisions made based on our content. Always conduct your own research and consult professionals before making financial or business decisions.\n\n",
@@ -1246,8 +1219,8 @@
         "word_count": 52
       },
       {
-        "id": "1389d4d6-f1f0-4acb-84a1-910a6f751b0c",
-        "rank": 34,
+        "id": "f1798997-b582-4e4e-b73a-dafdf4f5a81d",
+        "rank": 31,
         "score": 0.38360230324173283,
         "percent_difference": 53.41,
         "text": "### For Inquiries\n### For Inquiries\n#### About  \n* About RichestPH\n* Privacy Policy\n* Terms and Conditions\n* Copyright Notice\n* Affiliate Disclosure\n* Cookie Policy\n* Disclaimer  \n* About RichestPH\n* Privacy Policy\n* Terms and Conditions\n* Copyright Notice\n* Affiliate Disclosure\n* Cookie Policy\n* Disclaimer\n\n",
@@ -1255,8 +1228,8 @@
         "word_count": 50
       },
       {
-        "id": "43c56636-ba48-4d43-be58-cc48cc2fb8f0",
-        "rank": 35,
+        "id": "783eb8c7-5b8d-429e-b0b4-1429e4349e1d",
+        "rank": 32,
         "score": 0.38178238805347464,
         "percent_difference": 53.63,
         "text": "## Top Business Stories\n## Top Business Stories\n### For Inquiries  \nask@richestph.com  \nLinkedin-in\n\n\nAbout\nCategories",
@@ -1264,8 +1237,26 @@
         "word_count": 15
       },
       {
-        "id": "483c1011-a590-4dfa-a0c4-6829281f07b5",
-        "rank": 36,
+        "id": "cb4a240d-588f-45c4-80d6-d920abd939cf",
+        "rank": 33,
+        "score": 0.3805731904541442,
+        "percent_difference": 53.77,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Upcycled Furniture Design: Turn Trash into Treasure with This Creative Business  \nApril 1, 2025\n\n",
+        "relevance": 0.19257003436979697,
+        "word_count": 23
+      },
+      {
+        "id": "e8caa1ca-7c26-4c01-8865-758480f0958e",
+        "rank": 34,
+        "score": 0.3444456778960706,
+        "percent_difference": 58.16,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Own A School? Franchising Can Help You Grow!  \nMarch 25, 2025\n\n",
+        "relevance": 0.15155609827427108,
+        "word_count": 20
+      },
+      {
+        "id": "512389d4-07e5-4f26-a1bb-a4cb29f4d013",
+        "rank": 35,
         "score": 0.34365131955569284,
         "percent_difference": 58.26,
         "text": "### References\n### References\n#### Share This  \nOn Trend\n\n",
@@ -1273,7 +1264,16 @@
         "word_count": 9
       },
       {
-        "id": "85ac9293-8646-4775-a873-b6917cc7b91e",
+        "id": "76874294-b398-4ba4-a108-b215275953f2",
+        "rank": 36,
+        "score": 0.33876355135267344,
+        "percent_difference": 58.85,
+        "text": "## Top Business Stories\n## Top Business Stories\n### Should You Get a Business Loan to Finance Your Franchise? What Experts Say  \nMarch 28, 2025\n\n",
+        "relevance": 0.1863199532439704,
+        "word_count": 25
+      },
+      {
+        "id": "94fb1d54-b86d-417d-bc16-3e53e0715d50",
         "rank": 37,
         "score": 0.2486227149866819,
         "percent_difference": 69.8,

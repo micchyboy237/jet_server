@@ -178,22 +178,8 @@ async def process_and_compare_htmls(
         "header_docs": [doc.text for doc in header_docs],
         "html_results": [(url, dir_url, "html_content_omitted") for url, dir_url, _ in html_results],
         "query_scores": query_scores,
-        "context_nodes": [{"text": node.text, "score": node.score} for node in context_nodes],
-        "reranked_all_nodes": {
-            "url": top_url,
-            "query": query,
-            "info": compute_info(query_scores),
-            "results": [
-                {
-                    "doc": node.metadata["doc_index"] + 1,
-                    "rank": rank_idx + 1,
-                    "score": node.score,
-                    "text": node.text,
-                    "metadata": node.metadata,
-                }
-                for rank_idx, node in enumerate(reranked_all_nodes)
-            ]
-        }
+        "context_nodes": context_nodes,
+        "reranked_all_nodes": reranked_all_nodes
     }
 
     yield (
@@ -294,25 +280,25 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         yield await stream_progress("progress", "Sending query scores", {"query": request.query, "results": query_scores})
 
         # Prepare context node details
-        yield await stream_progress("progress", "Processing context nodes")
-        group_header_doc_indexes = [node.node.metadata.get(
-            "doc_index", i) for i, node in enumerate(context_nodes)]
-        context_nodes_data = [
-            {
-                "doc": node.node.metadata.get("doc_index", i) + 1,
-                "rank": rank_idx + 1,
-                "score": node.score,
-                "text": node.node.text,
-                "metadata": node.node.metadata,
-            }
-            for rank_idx, node in enumerate(context_nodes)
-            if node.node.metadata.get("doc_index", rank_idx) in group_header_doc_indexes
-        ]
-        yield await stream_progress("progress", "Context nodes processed", {"query": request.query, "results": context_nodes_data})
+        # yield await stream_progress("progress", "Processing context nodes")
+        # group_header_doc_indexes = [node.metadata.get(
+        #     "doc_index", i) for i, node in enumerate(context_nodes)]
+        # context_nodes_data = [
+        #     {
+        #         "doc": node.metadata.get("doc_index") + 1,
+        #         "rank": rank_idx + 1,
+        #         "score": node.score,
+        #         "text": node.text,
+        #         "metadata": node.metadata,
+        #     }
+        #     for rank_idx, node in enumerate(context_nodes)
+        #     if node.metadata.get("doc_index", rank_idx) in group_header_doc_indexes
+        # ]
+        # yield await stream_progress("progress", "Context nodes processed", {"query": request.query, "results": context_nodes_data})
 
         # Prepare context markdown
         yield await stream_progress("progress", "Generating context markdown")
-        context = "\n\n".join([node.node.text for node in context_nodes])
+        context = "\n\n".join([node.text for node in context_nodes])
         yield await stream_progress("progress", "Context markdown generated", {"context_length": len(context)})
 
         # Signal start of LLM streaming

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from jet.transformers.object import make_serializable
 from pydantic import BaseModel
-from typing import List, Dict, Any, AsyncGenerator, Tuple
+from typing import List, Dict, Any, AsyncGenerator, Optional, Tuple
 import os
 import json
 from llama_index.core.schema import Document as BaseDocument, NodeWithScore
@@ -25,9 +25,11 @@ class SearchRequest(BaseModel):
     output_dir: str = OUTPUT_DIR
 
 
-async def stream_progress(event_type: str, message: str, data: Any = None) -> str:
+async def stream_progress(event_type: str, message: Optional[str] = None, data: Any = None) -> str:
     """Helper function to format SSE messages with event type."""
-    event_data = {"message": message}
+    event_data = {}
+    if message is not None:
+        event_data["message"] = message
     if data is not None:
         event_data["data"] = data
     sse_message = f"event: {event_type}\n"
@@ -222,8 +224,8 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         ):
             yield await stream_progress(
                 "chat_chunk",
-                "LLM response chunk",
-                {"query": request.query, "chunk": make_serializable(chunk)}
+                None,
+                chunk
             )
 
         # Signal end of LLM streaming

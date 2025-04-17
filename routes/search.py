@@ -26,7 +26,6 @@ class SearchRequest(BaseModel):
     query: str
     embed_models: List[str] = ["mxbai-embed-large", "paraphrase-multilingual"]
     llm_model: str = "llama3.1"
-    output_dir: str = OUTPUT_DIR
 
 
 async def stream_progress(event_type: str, message: Optional[str] = None, data: Any = None) -> str:
@@ -190,8 +189,7 @@ async def process_and_compare_htmls(
 async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
     try:
         query = request.query
-        output_dir = os.path.join(
-            request.output_dir, query.lower().replace(' ', '_'))
+        output_dir = os.path.join(OUTPUT_DIR, query.lower().replace(' ', '_'))
 
         # Validate inputs
         if not query:
@@ -310,7 +308,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         ):
             response += chunk
             yield await stream_progress("chat_chunk", None, chunk)
-        save_file(response, "chat_response.md")
+        save_file(response, os.path.join(output_dir, "chat_response.md"))
 
         # Signal end of LLM streaming
         yield await stream_progress("chat_end", "LLM streaming response completed")

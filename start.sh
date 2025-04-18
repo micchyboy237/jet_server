@@ -27,6 +27,9 @@ if [ "$START_TUNNEL" = true ]; then
       echo \"[WARN] LocalTunnel disconnected. Restarting in 1 seconds...\"
       sleep 1
     done"'
+  
+  echo "[INFO] Starting keep-alive ping to http://jetdev.loca.lt every 60 seconds..."
+  (while true; do curl --silent http://jetdev.loca.lt > /dev/null; sleep 60; done) &
 else
   echo "[INFO] LocalTunnel not started. Use -s to enable."
 fi

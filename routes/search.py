@@ -31,7 +31,7 @@ OUTPUT_DIR = "generated/search"
 class SearchRequest(BaseModel):
     query: str
     embed_models: List[OLLAMA_EMBED_MODELS] = [
-        "mxbai-embed-large", "paraphrase-multilingual"]
+        "all-minilm:33m", "paraphrase-multilingual"]
     llm_model: OLLAMA_MODEL_NAMES = "llama3.2"
 
 

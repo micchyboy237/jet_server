@@ -30,7 +30,7 @@ OUTPUT_DIR = "generated/search"
 class SearchRequest(BaseModel):
     query: str
     embed_models: List[str] = ["mxbai-embed-large", "paraphrase-multilingual"]
-    llm_model: str = "llama3.1"
+    llm_model: str = "llama3.2"
 
 
 async def stream_progress(event_type: str, description: Optional[str] = None, data: Any = None) -> str:
@@ -86,7 +86,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
             top_reranked_nodes.append(NodeWithScore(node=TextNode(
                 text=item["text"], score=item["score"], metadata=item["metadata"])))
 
-        grouped_reranked_nodes = group_nodes(top_reranked_nodes, "llama3.1")
+        grouped_reranked_nodes = group_nodes(top_reranked_nodes, llm_model)
         top_context_nodes = grouped_reranked_nodes[0] if grouped_reranked_nodes else [
         ]
         top_grouped_context_nodes = group_by(

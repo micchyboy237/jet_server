@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from jet.transformers.object import make_serializable
 from jet.transformers.formatters import format_json
+from jet.utils.collection_utils import group_by
 from jet.wordnet.similarity import compute_info
 from pydantic import BaseModel
 from typing import List, Dict, Any, AsyncGenerator, Optional, Tuple
@@ -16,6 +17,8 @@ from jet.llm.ollama.base import Ollama
 from jet.features.search_and_chat import compare_html_results, get_docs_from_html, rerank_nodes, group_nodes
 from llama_index.core.schema import TextNode
 from jet.file.utils import save_file
+from jet.llm.evaluators.context_relevancy_evaluator import evaluate_context_relevancy
+from jet.llm.evaluators.answer_relevancy_evaluator import evaluate_answer_relevancy
 
 router = APIRouter()
 
@@ -34,134 +37,6 @@ async def stream_progress(event_type: str, description: Optional[str] = None, da
     payload = data if data is not None else description
     sse_message += f"data: {format_json(make_serializable(payload))}\n\n"
     return sse_message
-
-
-async def process_and_compare_htmls(
-    query: str,
-    url_html_tuples: List[Tuple[str, str]],
-    embed_models: List[OLLAMA_EMBED_MODELS],
-    output_dir: str
-) -> AsyncGenerator[Tuple[str, Dict[str, Any]], None]:
-    html_results = []
-    header_docs_for_all = {}
-    sub_dir = os.path.join(output_dir, "searched_html")
-
-    if os.path.exists(sub_dir):
-        shutil.rmtree(sub_dir)
-
-    yield (await stream_progress("start", "Starting HTML processing", {"total_urls": len(url_html_tuples)}), {})
-
-    yield (await stream_progress("comparison_start", "Comparing HTML results"), {})
-
-    comparison_results = compare_html_query_scores(
-        query, url_html_tuples, embed_models)
-
-    top_url = comparison_results["url"]
-
-    yield (await stream_progress("comparison_complete", f"Selected top result: {top_url}"), {})
-
-    for idx, (url, html) in enumerate(url_html_tuples, 1):
-        yield (await stream_progress("url_start", f"Processing HTML {idx}/{len(url_html_tuples)}: {url}"), {})
-
-        output_dir_url = safe_path_from_url(url, sub_dir)
-        os.makedirs(output_dir_url, exist_ok=True)
-
-        save_file(html, os.path.join(output_dir_url, "page.html"))
-
-        header_docs = get_docs_from_html(html)
-        header_docs = truncate_docs(header_docs, embed_models)
-        save_file("\n\n".join([doc.text for doc in header_docs]), os.path.join(
-            output_dir_url, "docs.md"))
-
-        yield (await stream_progress("docs_extracted", f"Extracted header docs for {url}", {"header_docs_count": len(header_docs)}), {})
-
-        query_scores, reranked_all_nodes = rerank_nodes(
-            query, header_docs, embed_models)
-        save_file(
-            {"url": url, "query": query, "info": compute_info(
-                query_scores), "results": query_scores},
-            os.path.join(output_dir_url, "query_scores.json")
-        )
-
-        yield (await stream_progress("nodes_reranked", f"Reranked nodes for {url}", query_scores), {})
-
-        reranked_nodes_data = [
-            {
-                "doc": node.metadata["doc_index"] + 1,
-                "rank": rank_idx + 1,
-                "score": node.score,
-                "text": node.text,
-                "metadata": node.metadata,
-            }
-            for rank_idx, node in enumerate(reranked_all_nodes)
-        ]
-        save_file(
-            {"url": url, "query": query, "results": reranked_nodes_data},
-            os.path.join(output_dir_url, "reranked_all_nodes.json")
-        )
-
-        yield (await stream_progress("nodes_processed", f"Processed reranked nodes for {url}", reranked_nodes_data), {})
-
-        html_results.append(
-            {"url": url, "query": query, "results": query_scores})
-        header_docs_for_all[url] = (
-            header_docs, query_scores, reranked_all_nodes)
-
-    yield (await stream_progress("comparison_start", "Comparing HTML results"), {})
-
-    comparison_results = compare_html_results(query, html_results)
-    save_file(comparison_results, os.path.join(
-        output_dir, "comparison_results.json"))
-
-    if not comparison_results:
-        yield (await stream_progress("error", "No comparison results available"), {})
-        return
-
-    top_result = comparison_results[0]
-    top_url = top_result["url"]
-
-    yield (await stream_progress("comparison_complete", f"Selected top result: {top_url}"), {})
-
-    header_docs, query_scores, reranked_all_nodes = header_docs_for_all[top_url]
-
-    yield (await stream_progress("nodes_grouping", "Grouping nodes for context"), {})
-
-    sorted_reranked_nodes = sorted(
-        reranked_all_nodes, key=lambda node: node.metadata['doc_index'])
-    grouped_reranked_nodes = group_nodes(sorted_reranked_nodes, "llama3.1")
-    context_nodes = grouped_reranked_nodes[0] if grouped_reranked_nodes else []
-
-    yield (await stream_progress("nodes_grouped", "Context nodes grouped", {"context_nodes_count": len(context_nodes)}), {})
-
-    group_header_doc_indexes = [node.metadata["doc_index"]
-                                for node in context_nodes]
-    save_file({
-        "query": query,
-        "results": [
-            {
-                "doc": node.metadata["doc_index"] + 1,
-                "rank": rank_idx + 1,
-                "score": node.score,
-                "text": node.text,
-                "metadata": node.metadata,
-            }
-            for rank_idx, node in enumerate(context_nodes)
-            if node.metadata["doc_index"] in group_header_doc_indexes
-        ]
-    }, os.path.join(output_dir, "reranked_context_nodes.json"))
-
-    context = "\n\n".join([node.text for node in context_nodes])
-    save_file(context, os.path.join(output_dir, "context.md"))
-
-    final_results = {
-        "url": top_url,
-        "header_docs": [doc.text for doc in header_docs],
-        "query_scores": query_scores,
-        "context_nodes": context_nodes,
-        "reranked_all_nodes": reranked_all_nodes
-    }
-
-    yield (await stream_progress("complete", "Final HTML processing results", final_results), final_results)
 
 
 async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
@@ -191,27 +66,42 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
 
         yield await stream_progress("results", "Search completed", {"search_results_count": len(search_results)})
 
-        # html_generator = process_and_compare_htmls(
-        #     query, url_html_tuples, embed_models, output_dir)
-
         yield await stream_progress("comparison_start", "Comparing HTML results")
 
         comparison_results = compare_html_query_scores(
             query, url_html_tuples, embed_models)
 
-        top_url = comparison_results["top_url"]
-        top_header_docs = comparison_results["top_header_docs"]
+        top_urls = comparison_results["top_urls"]
+        # top_header_docs = comparison_results["top_header_docs"]
         top_query_scores = comparison_results["top_query_scores"]
-        top_reranked_nodes = comparison_results["top_reranked_nodes"]
-        comparison_results = comparison_results["comparison_results"]
+        # top_reranked_nodes = comparison_results["top_reranked_nodes"]
+        # comparison_results = comparison_results["comparison_results"]
 
-        yield await stream_progress("comparison_complete", f"Selected top result: {top_url}", top_reranked_nodes)
+        yield await stream_progress("comparison_complete", f"Selected top result: {top_urls}", top_query_scores)
 
-        sorted_reranked_nodes = sorted(
-            top_reranked_nodes, key=lambda node: node.metadata['doc_index'])
-        grouped_reranked_nodes = group_nodes(sorted_reranked_nodes, "llama3.1")
+        top_reranked_nodes: list[NodeWithScore] = []
+        for item in top_query_scores:
+            top_reranked_nodes.append(NodeWithScore(node=TextNode(
+                text=item["text"], score=item["score"], metadata=item["metadata"])))
+
+        grouped_reranked_nodes = group_nodes(top_reranked_nodes, "llama3.1")
         top_context_nodes = grouped_reranked_nodes[0] if grouped_reranked_nodes else [
         ]
+        top_grouped_context_nodes = group_by(
+            top_context_nodes, "metadata['url']")
+        sorted_context_nodes: list[NodeWithScore] = []
+        sorted_contexts: list[str] = []
+        for grouped_nodes in top_grouped_context_nodes:
+            # url = grouped_nodes["group"]
+            # sorted_contexts.append(f"<!--URL: {url}-->")
+
+            nodes_with_scores: List[NodeWithScore] = grouped_nodes["items"]
+            sorted_nodes_with_scores = sorted(
+                nodes_with_scores, key=lambda node: node.metadata['doc_index'])
+            sorted_context_nodes.extend(sorted_nodes_with_scores)
+
+            sorted_contexts.extend(
+                [node.text for node in sorted_nodes_with_scores])
 
         # header_docs, html_results, query_scores, context_nodes = [], [], [], []
 
@@ -242,45 +132,52 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         #     "html_results_count": len(html_results)
         # })
 
-        save_file(comparison_results, os.path.join(
-            output_dir, "comparison_results.json"))
+        # save_file(comparison_results, os.path.join(
+        #     output_dir, "comparison_results.json"))
 
-        save_file("\n\n".join([doc.text for doc in top_header_docs]), os.path.join(
-            output_dir, "top_docs.md"))
+        # save_file("\n\n".join([doc.text for doc in top_header_docs]), os.path.join(
+        #     output_dir, "top_docs.md"))
         save_file({
-            "url": top_url,
+            "url": top_urls,
             "query": query,
             "info": compute_info(top_query_scores),
             "results": top_query_scores
         }, os.path.join(output_dir, "top_query_scores.json"))
 
-        save_file({"url": top_query_scores, "query": query, "results": top_reranked_nodes},
-                  os.path.join(output_dir, "top_reranked_nodes.json"))
+        save_file({
+            "url": top_urls,
+            "query": query,
+            "results": [
+                {
+                    "doc_index": node.metadata["doc_index"],
+                    "node_id": node.node_id,
+                    "url": node.metadata["url"],
+                    "score": node.score,
+                    "text": node.text,
+                }
+                for node in sorted_context_nodes
+            ]
+        }, os.path.join(output_dir, "top_context_nodes.json"))
 
-        yield await stream_progress("start", "Extracting header content")
-        header_texts = [doc.text for doc in top_header_docs]
-        headers_text = "\n\n".join(header_texts)
-        yield await stream_progress("complete", "Header content extracted", {"header_text_length": len(headers_text)})
-
-        yield await stream_progress("scores", "Sending query scores", {"query": query, "results": top_query_scores})
-        yield await stream_progress("start", "Generating context markdown")
-        top_context = "\n\n".join([node.text for node in top_context_nodes])
-        save_file(top_context, os.path.join(output_dir, "top_context.md"))
-        yield await stream_progress("complete", "Context markdown generated", {"context_length": len(top_context)})
+        context = "\n\n".join(sorted_contexts)
+        save_file(context, os.path.join(output_dir, "top_context.md"))
 
         yield await stream_progress("start", "Starting LLM streaming response")
         llm = Ollama(temperature=0.3, model=llm_model)
         response = ""
-        async for chunk in llm.stream_chat(query=query, context=top_context, model=llm_model):
+        async for chunk in llm.stream_chat(query=query, context=context, model=llm_model):
             response += chunk
             yield await stream_progress("chunk", None, chunk)
         save_file(response, os.path.join(output_dir, "chat_response.md"))
 
         yield await stream_progress("complete", "LLM streaming response completed")
+
+        save_file({"query": query, "context": context, "response": response},
+                  os.path.join(output_dir, "summary.json"))
+
         yield await stream_progress("complete", "Processing completed", {
             "status": "success",
             "query": query,
-            "header_docs_count": len(top_header_docs),
             "context_nodes_count": len(top_context_nodes)
         })
 

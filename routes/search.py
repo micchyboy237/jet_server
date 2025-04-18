@@ -2,6 +2,7 @@ import asyncio
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from jet.features.eval_search_and_chat import evaluate_llm_response
+from jet.features.eval_tasks import enqueue_evaluation_task
 from jet.transformers.object import make_serializable
 from jet.transformers.formatters import format_json
 from jet.utils.collection_utils import group_by
@@ -13,7 +14,7 @@ import json
 import shutil
 from llama_index.core.schema import Document as BaseDocument, NodeWithScore
 from jet.features.search_and_chat import compare_html_query_scores, search_and_filter_data, truncate_docs
-from jet.llm.models import OLLAMA_EMBED_MODELS
+from jet.llm.models import OLLAMA_EMBED_MODELS, OLLAMA_MODEL_NAMES
 from jet.scrapers.utils import safe_path_from_url
 from jet.llm.ollama.base import Ollama
 from jet.features.search_and_chat import compare_html_results, get_docs_from_html, rerank_nodes, group_nodes
@@ -29,8 +30,9 @@ OUTPUT_DIR = "generated/search"
 
 class SearchRequest(BaseModel):
     query: str
-    embed_models: List[str] = ["mxbai-embed-large", "paraphrase-multilingual"]
-    llm_model: str = "llama3.2"
+    embed_models: List[OLLAMA_EMBED_MODELS] = [
+        "mxbai-embed-large", "paraphrase-multilingual"]
+    llm_model: OLLAMA_MODEL_NAMES = "llama3.2"
 
 
 async def stream_progress(event_type: str, description: Optional[str] = None, data: Any = None) -> str:
@@ -144,15 +146,19 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
                   os.path.join(output_dir, "summary.json"))
 
         # Run evaluation in background (non-blocking)
-        asyncio.create_task(
-            asyncio.to_thread(
-                evaluate_llm_response,
-                query=query,
-                context=context,
-                response=response,
-                output_dir=output_dir
-            )
-        )
+        # asyncio.create_task(
+        #     asyncio.to_thread(
+        #         evaluate_llm_response,
+        #         query=query,
+        #         context=context,
+        #         response=response,
+        #         output_dir=output_dir
+        #     )
+        # )
+
+        # Add evaluation to queue
+        enqueue_evaluation_task(query, response, context, embed_model=embed_models[0],
+                                llm_model=llm_model, output_dir=output_dir)
 
         yield await stream_progress("complete", "Processing completed", {
             "status": "success",

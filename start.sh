@@ -18,8 +18,15 @@ while getopts ":s" opt; do
 done
 
 if [ "$START_TUNNEL" = true ]; then
-  echo "[INFO] Starting LocalTunnel on subdomain 'jetdev' in a new Terminal window..."
-  osascript -e 'tell application "Terminal" to do script "cd \"'"$PWD"'\" && lt --port 8002 --subdomain jetdev"'
+  echo "[INFO] Starting persistent LocalTunnel on subdomain 'jetdev' in a new Terminal window..."
+  osascript -e 'tell application "Terminal" to do script "
+    cd \"'"$PWD"'\"
+    while true; do
+      echo \"[INFO] Launching LocalTunnel...\"
+      lt --port 8002 --subdomain jetdev
+      echo \"[WARN] LocalTunnel disconnected. Restarting in 5 seconds...\"
+      sleep 5
+    done"'
 else
   echo "[INFO] LocalTunnel not started. Use -s to enable."
 fi

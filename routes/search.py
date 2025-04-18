@@ -85,8 +85,14 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
 
         top_reranked_nodes: list[NodeWithScore] = []
         for item in top_query_scores:
-            top_reranked_nodes.append(NodeWithScore(node=TextNode(
-                text=item["text"], score=item["score"], metadata=item["metadata"])))
+            top_reranked_nodes.append(NodeWithScore(
+                node=TextNode(
+                    node_id=item["id"],
+                    text=item["text"],
+                    metadata=item["metadata"]
+                ),
+                score=item["score"]
+            ))
 
         grouped_reranked_nodes = group_nodes(top_reranked_nodes, llm_model)
         top_context_nodes = grouped_reranked_nodes[0] if grouped_reranked_nodes else [

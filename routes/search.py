@@ -1,5 +1,7 @@
+import asyncio
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
+from jet.features.eval_search_and_chat import evaluate_llm_response
 from jet.transformers.object import make_serializable
 from jet.transformers.formatters import format_json
 from jet.utils.collection_utils import group_by
@@ -103,40 +105,6 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
             sorted_contexts.extend(
                 [node.text for node in sorted_nodes_with_scores])
 
-        # header_docs, html_results, query_scores, context_nodes = [], [], [], []
-
-        # async for sse_message, data in html_generator:
-        #     yield sse_message
-        #     if data and "header_docs" in data:
-        #         url = data["url"]
-        #         header_docs = [BaseDocument(text=text)
-        #                        for text in data["header_docs"]]
-        #         query_scores = data["query_scores"]
-        #         context_nodes = data["context_nodes"]
-        #         reranked_all_nodes = data["reranked_all_nodes"]
-
-        # missing_parts = []
-        # if not header_docs:
-        #     missing_parts.append("header_docs")
-        # if not query_scores:
-        #     missing_parts.append("query_scores")
-        # if not context_nodes:
-        #     missing_parts.append("context_nodes")
-
-        # if missing_parts:
-        #     yield await stream_progress("error", f"Missing data in: {', '.join(missing_parts)}")
-        #     return
-
-        # yield await stream_progress("complete", "HTML processing completed", {
-        #     "header_docs_count": len(header_docs),
-        #     "html_results_count": len(html_results)
-        # })
-
-        # save_file(comparison_results, os.path.join(
-        #     output_dir, "comparison_results.json"))
-
-        # save_file("\n\n".join([doc.text for doc in top_header_docs]), os.path.join(
-        #     output_dir, "top_docs.md"))
         save_file({
             "url": top_urls,
             "query": query,
@@ -174,6 +142,17 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
 
         save_file({"query": query, "context": context, "response": response},
                   os.path.join(output_dir, "summary.json"))
+
+        # Run evaluation in background (non-blocking)
+        asyncio.create_task(
+            asyncio.to_thread(
+                evaluate_llm_response,
+                query=query,
+                context=context,
+                response=response,
+                output_dir=output_dir
+            )
+        )
 
         yield await stream_progress("complete", "Processing completed", {
             "status": "success",

@@ -24,8 +24,8 @@ if [ "$START_TUNNEL" = true ]; then
     while true; do
       echo \"[INFO] Launching LocalTunnel...\"
       lt --port 8002 --subdomain jetdev
-      echo \"[WARN] LocalTunnel disconnected. Restarting in 5 seconds...\"
-      sleep 5
+      echo \"[WARN] LocalTunnel disconnected. Restarting in 1 seconds...\"
+      sleep 1
     done"'
 else
   echo "[INFO] LocalTunnel not started. Use -s to enable."

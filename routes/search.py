@@ -39,7 +39,7 @@ async def stream_progress(event_type: str, description: Optional[str] = None, da
     """Helper function to format SSE messages with event type."""
     sse_message = f"event: {event_type}\n"
     payload = data if data is not None else description
-    sse_message += f"data: {format_json(make_serializable(payload))}\n\n"
+    sse_message += f"data: {format_json(make_serializable(payload), indent=None)}\n\n"
     return sse_message
 
 
@@ -68,7 +68,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         save_file(search_results, os.path.join(
             output_dir, "search_results.json"))
 
-        yield await stream_progress("results", "Search completed", {"search_results_count": len(search_results)})
+        yield await stream_progress("search_results", "Search completed", {"search_results_count": len(search_results)})
 
         yield await stream_progress("comparison_start", "Comparing HTML results")
 
@@ -150,17 +150,6 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
 
         save_file({"query": query, "context": context, "response": response},
                   os.path.join(output_dir, "summary.json"))
-
-        # Run evaluation in background (non-blocking)
-        # asyncio.create_task(
-        #     asyncio.to_thread(
-        #         evaluate_llm_response,
-        #         query=query,
-        #         context=context,
-        #         response=response,
-        #         output_dir=output_dir
-        #     )
-        # )
 
         # Add evaluation to queue
         enqueue_evaluation_task(query, response, context, embed_model=embed_models[0],

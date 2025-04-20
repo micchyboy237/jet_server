@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from jet.features.eval_search_and_chat import evaluate_llm_response
@@ -76,10 +77,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
             query, url_html_tuples, embed_models)
 
         top_urls = comparison_results["top_urls"]
-        # top_header_docs = comparison_results["top_header_docs"]
         top_query_scores = comparison_results["top_query_scores"]
-        # top_reranked_nodes = comparison_results["top_reranked_nodes"]
-        # comparison_results = comparison_results["comparison_results"]
 
         yield await stream_progress("comparison_complete", f"Selected top result: {top_urls}", top_query_scores)
 
@@ -102,14 +100,10 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         sorted_context_nodes: list[NodeWithScore] = []
         sorted_contexts: list[str] = []
         for grouped_nodes in top_grouped_context_nodes:
-            # url = grouped_nodes["group"]
-            # sorted_contexts.append(f"<!--URL: {url}-->")
-
             nodes_with_scores: List[NodeWithScore] = grouped_nodes["items"]
             sorted_nodes_with_scores = sorted(
                 nodes_with_scores, key=lambda node: node.metadata['doc_index'])
             sorted_context_nodes.extend(sorted_nodes_with_scores)
-
             sorted_contexts.extend(
                 [node.text for node in sorted_nodes_with_scores])
 
@@ -151,7 +145,6 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         save_file({"query": query, "context": context, "response": response},
                   os.path.join(output_dir, "summary.json"))
 
-        # Add evaluation to queue
         enqueue_evaluation_task(query, response, context, embed_model=embed_models[0],
                                 llm_model=llm_model, output_dir=output_dir)
 
@@ -163,6 +156,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
 
     except Exception as e:
         yield await stream_progress("error", f"Error processing request: {str(e)}")
+        traceback.print_exc()
         return
 
 

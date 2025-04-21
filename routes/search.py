@@ -1,6 +1,6 @@
 import asyncio
 import traceback
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
 from jet.features.eval_search_and_chat import evaluate_llm_response
 from jet.features.eval_tasks import enqueue_evaluation_task
@@ -44,8 +44,10 @@ async def stream_progress(event_type: str, description: Optional[str] = None, da
     return sse_message
 
 
-async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
+async def process_search(request: SearchRequest, session_id: Optional[str] = None) -> AsyncGenerator[str, None]:
+
     try:
+
         query = request.query
         embed_models = request.embed_models
         llm_model = request.llm_model
@@ -63,7 +65,7 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         yield await stream_progress("start", "Initialized processing")
         yield await stream_progress("start", "Starting search and reranking")
 
-        search_rerank_result = await search_and_filter_data(query)
+        search_rerank_result = search_and_filter_data(query)
         search_results = search_rerank_result["search_results"]
         url_html_tuples = search_rerank_result["url_html_tuples"]
         save_file(search_results, os.path.join(
@@ -133,14 +135,14 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         save_file(context, os.path.join(output_dir, "top_context.md"))
 
         yield await stream_progress("start", "Starting LLM streaming response")
-        llm = Ollama(temperature=0.3, model=llm_model)
+        llm = Ollama(temperature=0.3, model=llm_model, session_id=session_id)
         response = ""
         async for chunk in llm.stream_chat(query=query, context=context, model=llm_model):
             response += chunk
             yield await stream_progress("chunk", None, chunk)
         save_file(response, os.path.join(output_dir, "chat_response.md"))
 
-        yield await stream_progress("complete", "LLM streaming response completed")
+        yield await stream_progress("chat_complete", "LLM streaming response completed")
 
         save_file({"query": query, "context": context, "response": response},
                   os.path.join(output_dir, "summary.json"))
@@ -151,7 +153,8 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
         yield await stream_progress("complete", "Processing completed", {
             "status": "success",
             "query": query,
-            "context_nodes_count": len(top_context_nodes)
+            "context_nodes_count": len(top_context_nodes),
+            "session_id": llm.session_id
         })
 
     except Exception as e:
@@ -161,9 +164,12 @@ async def process_search(request: SearchRequest) -> AsyncGenerator[str, None]:
 
 
 @router.post("/search-and-process")
-async def search_and_process(request: SearchRequest):
+async def search_and_process(
+    request: SearchRequest,
+    session_id: Optional[str] = Header(default=None, alias="session-id")
+):
     return StreamingResponse(
-        process_search(request),
+        process_search(request, session_id=session_id),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
     )

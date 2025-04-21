@@ -157,7 +157,6 @@ async def process_search(request: SearchRequest, session_id: Optional[str] = Non
         yield await stream_progress("complete", "Processing completed", {
             "status": "success",
             "query": query,
-            "context_nodes_count": len(top_context_nodes),
             "session_id": llm.session_id
         })
 

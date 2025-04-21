@@ -9,7 +9,7 @@ from jet.transformers.formatters import format_json
 from jet.utils.collection_utils import group_by
 from jet.wordnet.similarity import compute_info
 from pydantic import BaseModel
-from typing import List, Dict, Any, AsyncGenerator, Optional, Tuple
+from typing import List, Dict, Any, AsyncGenerator, Literal, Optional, Tuple
 import os
 import json
 import shutil
@@ -34,6 +34,7 @@ class SearchRequest(BaseModel):
     embed_models: List[OLLAMA_EMBED_MODELS] = [
         "all-minilm:33m", "paraphrase-multilingual"]
     llm_model: OLLAMA_MODEL_NAMES = "llama3.2"
+    format: Optional[str | Literal["json"]] = None
 
 
 async def stream_progress(event_type: str, description: Optional[str] = None, data: Any = None) -> str:
@@ -47,10 +48,10 @@ async def stream_progress(event_type: str, description: Optional[str] = None, da
 async def process_search(request: SearchRequest, session_id: Optional[str] = None) -> AsyncGenerator[str, None]:
 
     try:
-
         query = request.query
         embed_models = request.embed_models
         llm_model = request.llm_model
+        format = request.format
         output_dir = os.path.join(OUTPUT_DIR, query.lower().replace(' ', '_'))
 
         if not query:
@@ -61,83 +62,86 @@ async def process_search(request: SearchRequest, session_id: Optional[str] = Non
             yield await stream_progress("validation_error", "Invalid embed model specified")
             return
 
-        os.makedirs(output_dir, exist_ok=True)
-        yield await stream_progress("start", "Initialized processing")
-        yield await stream_progress("start", "Starting search and reranking")
+        if not session_id:
+            os.makedirs(output_dir, exist_ok=True)
+            yield await stream_progress("start", "Initialized processing")
+            yield await stream_progress("start", "Starting search and reranking")
 
-        search_rerank_result = search_and_filter_data(query)
-        search_results = search_rerank_result["search_results"]
-        url_html_tuples = search_rerank_result["url_html_tuples"]
-        save_file(search_results, os.path.join(
-            output_dir, "search_results.json"))
+            search_rerank_result = search_and_filter_data(query)
+            search_results = search_rerank_result["search_results"]
+            url_html_tuples = search_rerank_result["url_html_tuples"]
+            save_file(search_results, os.path.join(
+                output_dir, "search_results.json"))
 
-        yield await stream_progress("search_results", "Search completed", {"search_results_count": len(search_results)})
+            yield await stream_progress("search_results", "Search completed", {"search_results_count": len(search_results)})
 
-        yield await stream_progress("comparison_start", "Comparing HTML results")
+            yield await stream_progress("comparison_start", "Comparing HTML results")
 
-        comparison_results = compare_html_query_scores(
-            query, url_html_tuples, embed_models)
+            comparison_results = compare_html_query_scores(
+                query, url_html_tuples, embed_models)
 
-        top_urls = comparison_results["top_urls"]
-        top_query_scores = comparison_results["top_query_scores"]
+            top_urls = comparison_results["top_urls"]
+            top_query_scores = comparison_results["top_query_scores"]
 
-        yield await stream_progress("comparison_complete", f"Selected top result: {top_urls}", top_query_scores)
+            yield await stream_progress("comparison_complete", f"Selected top result: {top_urls}", top_query_scores)
 
-        top_reranked_nodes: list[NodeWithScore] = []
-        for item in top_query_scores:
-            top_reranked_nodes.append(NodeWithScore(
-                node=TextNode(
-                    node_id=item["id"],
-                    text=item["text"],
-                    metadata=item["metadata"]
-                ),
-                score=item["score"]
-            ))
+            top_reranked_nodes: list[NodeWithScore] = []
+            for item in top_query_scores:
+                top_reranked_nodes.append(NodeWithScore(
+                    node=TextNode(
+                        node_id=item["id"],
+                        text=item["text"],
+                        metadata=item["metadata"]
+                    ),
+                    score=item["score"]
+                ))
 
-        grouped_reranked_nodes = group_nodes(top_reranked_nodes, llm_model)
-        top_context_nodes = grouped_reranked_nodes[0] if grouped_reranked_nodes else [
-        ]
-        top_grouped_context_nodes = group_by(
-            top_context_nodes, "metadata['url']")
-        sorted_context_nodes: list[NodeWithScore] = []
-        sorted_contexts: list[str] = []
-        for grouped_nodes in top_grouped_context_nodes:
-            nodes_with_scores: List[NodeWithScore] = grouped_nodes["items"]
-            sorted_nodes_with_scores = sorted(
-                nodes_with_scores, key=lambda node: node.metadata['doc_index'])
-            sorted_context_nodes.extend(sorted_nodes_with_scores)
-            sorted_contexts.extend(
-                [node.text for node in sorted_nodes_with_scores])
-
-        save_file({
-            "url": top_urls,
-            "query": query,
-            "info": compute_info(top_query_scores),
-            "results": top_query_scores
-        }, os.path.join(output_dir, "top_query_scores.json"))
-
-        save_file({
-            "url": top_urls,
-            "query": query,
-            "results": [
-                {
-                    "doc_index": node.metadata["doc_index"],
-                    "node_id": node.node_id,
-                    "url": node.metadata["url"],
-                    "score": node.score,
-                    "text": node.text,
-                }
-                for node in sorted_context_nodes
+            grouped_reranked_nodes = group_nodes(top_reranked_nodes, llm_model)
+            top_context_nodes = grouped_reranked_nodes[0] if grouped_reranked_nodes else [
             ]
-        }, os.path.join(output_dir, "top_context_nodes.json"))
+            top_grouped_context_nodes = group_by(
+                top_context_nodes, "metadata['url']")
+            sorted_context_nodes: list[NodeWithScore] = []
+            sorted_contexts: list[str] = []
+            for grouped_nodes in top_grouped_context_nodes:
+                nodes_with_scores: List[NodeWithScore] = grouped_nodes["items"]
+                sorted_nodes_with_scores = sorted(
+                    nodes_with_scores, key=lambda node: node.metadata['doc_index'])
+                sorted_context_nodes.extend(sorted_nodes_with_scores)
+                sorted_contexts.extend(
+                    [node.text for node in sorted_nodes_with_scores])
 
-        context = "\n\n".join(sorted_contexts)
-        save_file(context, os.path.join(output_dir, "top_context.md"))
+            save_file({
+                "url": top_urls,
+                "query": query,
+                "info": compute_info(top_query_scores),
+                "results": top_query_scores
+            }, os.path.join(output_dir, "top_query_scores.json"))
+
+            save_file({
+                "url": top_urls,
+                "query": query,
+                "results": [
+                    {
+                        "doc_index": node.metadata["doc_index"],
+                        "node_id": node.node_id,
+                        "url": node.metadata["url"],
+                        "score": node.score,
+                        "text": node.text,
+                    }
+                    for node in sorted_context_nodes
+                ]
+            }, os.path.join(output_dir, "top_context_nodes.json"))
+
+            context = "\n\n".join(sorted_contexts)
+            save_file(context, os.path.join(output_dir, "top_context.md"))
+        else:
+            context = None
 
         yield await stream_progress("start", "Starting LLM streaming response")
         llm = Ollama(temperature=0.3, model=llm_model, session_id=session_id)
         response = ""
-        async for chunk in llm.stream_chat(query=query, context=context, model=llm_model):
+        async for chunk in llm.stream_chat(query=query, context=context, model=llm_model, format=format):
             response += chunk
             yield await stream_progress("chunk", None, chunk)
         save_file(response, os.path.join(output_dir, "chat_response.md"))
@@ -147,8 +151,8 @@ async def process_search(request: SearchRequest, session_id: Optional[str] = Non
         save_file({"query": query, "context": context, "response": response},
                   os.path.join(output_dir, "summary.json"))
 
-        enqueue_evaluation_task(query, response, context, embed_model=embed_models[0],
-                                llm_model=llm_model, output_dir=output_dir)
+        # enqueue_evaluation_task(query, response, context, embed_model=embed_models[0],
+        #                         llm_model=llm_model, output_dir=output_dir)
 
         yield await stream_progress("complete", "Processing completed", {
             "status": "success",

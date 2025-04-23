@@ -2,12 +2,17 @@ import asyncio
 import traceback
 from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
+from jet.code.splitter_markdown_utils import get_md_header_contents
 from jet.features.eval_search_and_chat import evaluate_llm_response
 from jet.features.eval_tasks import enqueue_evaluation_task
+from jet.scrapers.browser.playwright_utils import scrape_multiple_urls
+from jet.scrapers.preprocessor import html_to_markdown
 from jet.transformers.object import make_serializable
 from jet.transformers.formatters import format_json
 from jet.utils.collection_utils import group_by
 from jet.wordnet.similarity import compute_info
+from jet.wordnet.wordnet_types import SimilarityResult
+from jet.wordnet.words import count_words
 from pydantic import BaseModel
 from typing import List, Dict, Any, AsyncGenerator, Literal, Optional, Tuple
 import os
@@ -16,13 +21,15 @@ import shutil
 from llama_index.core.schema import Document as BaseDocument, NodeWithScore
 from jet.features.search_and_chat import compare_html_query_scores, search_and_filter_data, truncate_docs
 from jet.llm.models import OLLAMA_EMBED_MODELS, OLLAMA_MODEL_NAMES
-from jet.scrapers.utils import safe_path_from_url
+from jet.scrapers.utils import safe_path_from_url, search_data, validate_headers
 from jet.llm.ollama.base import Ollama
 from jet.features.search_and_chat import compare_html_results, get_docs_from_html, rerank_nodes, group_nodes
 from llama_index.core.schema import TextNode
 from jet.file.utils import save_file
 from jet.llm.evaluators.context_relevancy_evaluator import evaluate_context_relevancy
 from jet.llm.evaluators.answer_relevancy_evaluator import evaluate_answer_relevancy
+from jet.utils.url_utils import normalize_url
+from jet.logger import logger
 
 router = APIRouter()
 
@@ -35,6 +42,33 @@ class SearchRequest(BaseModel):
         "all-minilm:33m", "paraphrase-multilingual"]
     llm_model: OLLAMA_MODEL_NAMES = "llama3.2"
     format: Optional[str | Literal["json"]] = None
+
+
+def get_url_html_tuples(urls: list[str], top_n: int = 3, num_parallel: int = 3, min_header_count: int = 10, min_avg_word_count: int = 10, output_dir: Optional[str] = None) -> list[tuple[str, str]]:
+    urls = [normalize_url(url) for url in urls]
+
+    if output_dir:
+        sub_dir = os.path.join(output_dir, "searched_html")
+        shutil.rmtree(sub_dir, ignore_errors=True)
+
+    url_html_tuples = []
+    for url, html in scrape_multiple_urls(urls, top_n=top_n, num_parallel=num_parallel, min_header_count=min_header_count, min_avg_word_count=min_avg_word_count):
+        url_html_tuples.append((url, html))
+
+        if output_dir:
+            output_dir_url = safe_path_from_url(url, sub_dir)
+            os.makedirs(output_dir_url, exist_ok=True)
+
+            md_text = html_to_markdown(html)
+            headers = get_md_header_contents(md_text)
+            header_texts = [header["content"] for header in headers]
+
+            save_file(html, os.path.join(output_dir_url, "doc.html"))
+            save_file("\n\n".join(header_texts),
+                      os.path.join(output_dir_url, "doc.md"))
+
+    logger.success(f"Done scraping urls {len(url_html_tuples)}")
+    return url_html_tuples
 
 
 async def stream_progress(event_type: str, description: Optional[str] = None, data: Any = None) -> str:
@@ -65,24 +99,26 @@ async def process_search(request: SearchRequest, session_id: Optional[str] = Non
         if not session_id:
             os.makedirs(output_dir, exist_ok=True)
             yield await stream_progress("start", "Initialized processing")
-            yield await stream_progress("start", "Starting search and reranking")
 
-            search_rerank_result = search_and_filter_data(query)
-            search_results = search_rerank_result["search_results"]
-            url_html_tuples = search_rerank_result["url_html_tuples"]
+            yield await stream_progress("search_start", "Starting search")
+            search_results = search_data(query)
             save_file(search_results, os.path.join(
                 output_dir, "search_results.json"))
+            yield await stream_progress("search_complete", "Search completed", {"search_results_count": len(search_results)})
 
-            yield await stream_progress("search_results", "Search completed", {"search_results_count": len(search_results)})
+            yield await stream_progress("start", "Starting search")
+
+            yield await stream_progress("scrape_start", "Scraping html")
+            urls = [item["url"] for item in search_results]
+            url_html_tuples = get_url_html_tuples(urls, output_dir=output_dir)
+            yield await stream_progress("scrape_complete", "Scrape completed", {"url_html_tuples": len(url_html_tuples)})
 
             yield await stream_progress("comparison_start", "Comparing HTML results")
-
             comparison_results = compare_html_query_scores(
                 query, url_html_tuples, embed_models)
 
             top_urls = comparison_results["top_urls"]
             top_query_scores = comparison_results["top_query_scores"]
-
             yield await stream_progress("comparison_complete", f"Selected top result: {top_urls}", top_query_scores)
 
             top_reranked_nodes: list[NodeWithScore] = []

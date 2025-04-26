@@ -13,6 +13,7 @@ from routes.job.cover_letter import router as cover_letter_router
 from routes.eval.faithfulness import router as faithfulness_router
 from routes.evaluation import router as evaluation_router
 # Import cleanup_idle_models
+from routes.mlx import router as mlx_router
 from routes.text_generation import router as text_generation_router, cleanup_idle_models
 from middlewares import log_exceptions_middleware
 from jet.llm.ollama.base import initialize_ollama_settings
@@ -62,6 +63,8 @@ app.include_router(evaluation_router,
                    prefix="/api/v1/evaluation", tags=["evaluation", "models"])
 app.include_router(faithfulness_router,
                    prefix="/api/v1/eval/faithfulness", tags=["evaluation", "faithfulness"])
+app.include_router(mlx_router,
+                   prefix="/api/v1/mlx", tags=["mlx"])
 app.include_router(text_generation_router,
                    prefix="/api/v1/text-generation", tags=["text-generation"])
 

@@ -65,8 +65,6 @@ async def load_model(model_name: str):
 
 async def stream_tokens(model, tokenizer, prompt, max_tokens):
     """Generator function to stream tokens from stream_generate."""
-    logger.gray("\nPrompt:")
-    logger.debug(prompt)
     for response in stream_generate(
         model,
         tokenizer,
@@ -94,6 +92,7 @@ async def generate_text(request: TextGenerationRequest):
                 messages, add_generation_prompt=True
             )
         logger.info(f"Generating text with model: {request.model}")
+        logger.log("\nPrompt:", request.prompt, colors=["GRAY", "DEBUG"])
         response = generate(
             model,
             tokenizer,
@@ -123,6 +122,7 @@ async def stream_text(request: TextGenerationRequest):
                 messages, add_generation_prompt=True
             )
         logger.info(f"Streaming text with model: {request.model}")
+        logger.log("\nPrompt:", request.prompt, colors=["GRAY", "DEBUG"])
         return StreamingResponse(
             stream_tokens(model, tokenizer, prompt, request.max_tokens),
             media_type="application/x-ndjson"

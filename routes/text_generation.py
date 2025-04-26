@@ -20,7 +20,8 @@ MODEL_CACHE = {
     "model": None,
     "tokenizer": None,
     "model_name": None,
-    "last_used": None
+    "last_used": None,
+    "is_streaming": False  # Track if streaming is in progress
 }
 MODEL_CACHE_LOCK = asyncio.Lock()
 
@@ -44,6 +45,7 @@ def unload_current_model():
         MODEL_CACHE["tokenizer"] = None
         MODEL_CACHE["model_name"] = None
         MODEL_CACHE["last_used"] = None
+        MODEL_CACHE["is_streaming"] = False
         gc.collect()
         mx.metal.clear_cache()
         logger.info("Model unloaded and memory cleared.")
@@ -71,7 +73,9 @@ async def cleanup_idle_models():
     """Background task to unload models idle for more than MODEL_CACHE_DURATION."""
     while True:
         async with MODEL_CACHE_LOCK:
-            if MODEL_CACHE["model"] is not None and MODEL_CACHE["last_used"] is not None:
+            if (MODEL_CACHE["model"] is not None and
+                MODEL_CACHE["last_used"] is not None and
+                    not MODEL_CACHE["is_streaming"]):  # Skip if streaming
                 idle_time = time.time() - MODEL_CACHE["last_used"]
                 if idle_time > MODEL_CACHE_DURATION:
                     logger.info(
@@ -84,6 +88,7 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = 
     """Generator function to stream tokens from stream_generate."""
     async with MODEL_CACHE_LOCK:
         MODEL_CACHE["last_used"] = time.time()
+        MODEL_CACHE["is_streaming"] = True  # Mark streaming as active
     try:
         for response in stream_generate(
             model,
@@ -101,6 +106,7 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = 
         # Unload model after streaming is complete if MODEL_CACHE_DURATION is 0
         async with MODEL_CACHE_LOCK:
             MODEL_CACHE["last_used"] = time.time()
+            MODEL_CACHE["is_streaming"] = False  # Mark streaming as complete
             if MODEL_CACHE_DURATION == 0:
                 logger.info(
                     f"Streaming complete for model {MODEL_CACHE['model_name']}, unloading immediately.")

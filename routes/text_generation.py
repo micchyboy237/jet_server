@@ -74,10 +74,12 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = 
         max_tokens=max_tokens,
     ):
         logger.success(response.text, flush=True)
+        # Ensure newlines are preserved in the response text
+        text = response.text.replace("\r\n", "\n")  # Normalize newlines
         if with_info:
             yield json.dumps(make_serializable(response)) + "\n"
         else:
-            yield f"data: {response.text}\n\n"
+            yield f"data: {text}\n\n"
 
 
 @router.post("/generate", response_model=TextGenerationResponse)

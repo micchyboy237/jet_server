@@ -1,4 +1,5 @@
 # jet_server/routes/text_generation.py
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from jet.logger import logger
@@ -26,6 +27,7 @@ MODEL_CACHE_LOCK = asyncio.Lock()
 class TextGenerationRequest(BaseModel):
     model: str
     prompt: str
+    stop: Optional[list[str]]
     max_tokens: int = 300
     with_info: bool = False
 
@@ -79,7 +81,7 @@ async def cleanup_idle_models():
         await asyncio.sleep(10)  # Check every 10 seconds
 
 
-async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = False):
+async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = False, **kwargs):
     """Generator function to stream tokens from stream_generate."""
     async with MODEL_CACHE_LOCK:
         # Update last used time at start
@@ -89,6 +91,7 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = 
         tokenizer,
         prompt=prompt,
         max_tokens=max_tokens,
+        **kwargs
     ):
         logger.success(response.text, flush=True)
         text = response.text.replace("\r\n", "\n")
@@ -116,6 +119,7 @@ async def generate_text(request: TextGenerationRequest):
             tokenizer,
             prompt=request.prompt,
             max_tokens=request.max_tokens,
+            stop=request.stop,
             verbose=True
         )
         async with MODEL_CACHE_LOCK:
@@ -140,7 +144,7 @@ async def stream_text(request: TextGenerationRequest):
         media_type = "application/x-ndjson" if request.with_info else "text/event-stream"
         return StreamingResponse(
             stream_tokens(model, tokenizer, request.prompt,
-                          request.max_tokens, request.with_info),
+                          request.max_tokens, request.with_info, stop=request.stop),
             media_type=media_type
         )
     except Exception as e:

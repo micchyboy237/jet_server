@@ -140,7 +140,6 @@ async def generate_text(request: TextGenerationRequest):
             tokenizer,
             prompt=request.prompt,
             max_tokens=request.max_tokens,
-            stop=request.stop,
             verbose=True
         )
         async with MODEL_CACHE_LOCK:
@@ -203,7 +202,6 @@ async def chat_text(request: TextGenerationRequest):
             tokenizer,
             prompt=prompt,
             max_tokens=request.max_tokens,
-            stop=request.stop,
             verbose=True
         )
         async with MODEL_CACHE_LOCK:

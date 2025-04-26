@@ -182,6 +182,7 @@ async def chat(request: ChatRequest):
                 tokenizer,
                 prompt_tokens,
                 sampler=sampler,
+                verbose=True,
                 **options
             )
             async with MODEL_CACHE_LOCK:
@@ -258,6 +259,7 @@ async def generate_endpoint(request: GenerateRequest):
                 tokenizer,
                 prompt_tokens,
                 sampler=sampler,
+                verbose=True,
                 **options
             )
             async with MODEL_CACHE_LOCK:

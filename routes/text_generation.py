@@ -178,6 +178,3 @@ async def chat_text(request: TextGenerationRequest):
     except Exception as e:
         logger.error(f"Error in chat generation: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Start the cleanup task when the module is loaded
-asyncio.create_task(cleanup_idle_models())

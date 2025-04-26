@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Union, Dict, Any
 from fastapi.responses import StreamingResponse
 from mlx_lm import load, generate, stream_generate
-from mlx_lm.sample_utils import make_sampler
+from mlx_lm.sample_utils import make_sampler, make_logits_processors
 from model_cache import MODEL_CACHE, MODEL_CACHE_LOCK, load_model
 from jet.llm.mlx.utils import get_model_max_tokens
 from jet.logger import logger
@@ -139,11 +139,20 @@ async def chat(request: ChatRequest):
             async def stream_response():
                 async with MODEL_CACHE_LOCK:
                     MODEL_CACHE["last_used"] = time.time()
+
+                logits_processors = make_logits_processors(
+                    # Use from options or default
+                    repetition_penalty=options.get("repeat_penalty", None),
+                    repetition_context_size=options.get(
+                        "repeat_last_n", 20)  # Use from options or default
+                )
+
                 for response in stream_generate(
                     model,
                     tokenizer,
                     prompt_tokens,
                     sampler=sampler,
+                    logits_processors=logits_processors,
                     **options
                 ):
                     logger.success(response.text, flush=True)
@@ -222,80 +231,4 @@ async def chat(request: ChatRequest):
             return final_response
     except Exception as e:
         logger.error(f"Error in chat generation: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/generate")
-async def generate_endpoint(request: GenerateRequest):
-    try:
-        model, tokenizer = await load_model(request.model)
-        prompt = request.prompt
-        if request.system:
-            messages = [
-                {"role": "system", "content": request.system},
-                {"role": "user", "content": request.prompt}
-            ]
-            prompt = tokenizer.apply_chat_template(
-                messages,
-                tokenize=False,
-                add_generation_prompt=True
-            )
-        if not request.raw and tokenizer.chat_template:
-            prompt = tokenizer.apply_chat_template(
-                [{"role": "user", "content": prompt}],
-                tokenize=False,
-                add_generation_prompt=True
-            )
-        prompt_tokens = tokenizer.encode(prompt, add_special_tokens=False)
-        options, sampler = process_options(request.options)
-        if request.stream:
-            logger.info(f"Streaming text with model: {request.model}")
-            logger.log("\nPrompt:", prompt, colors=["GRAY", "DEBUG"])
-
-            async def stream_response():
-                async with MODEL_CACHE_LOCK:
-                    MODEL_CACHE["last_used"] = time.time()
-                for response in stream_generate(
-                    model,
-                    tokenizer,
-                    prompt_tokens,
-                    sampler=sampler,
-                    **options
-                ):
-                    logger.success(response.text, flush=True)
-                    yield f"data: {response.text}\n\n"
-                    async with MODEL_CACHE_LOCK:
-                        MODEL_CACHE["last_used"] = time.time()
-            return StreamingResponse(
-                stream_response(),
-                media_type="text/event-stream"
-            )
-        else:
-            logger.info(f"Generating text with model: {request.model}")
-            logger.log("\nPrompt:", prompt, colors=["GRAY", "DEBUG"])
-            response = generate(
-                model,
-                tokenizer,
-                prompt_tokens,
-                sampler=sampler,
-                verbose=True,
-                **options
-            )
-            async with MODEL_CACHE_LOCK:
-                MODEL_CACHE["last_used"] = time.time()
-            final_response = GenerationResponse(
-                text=response,
-                token=0,
-                logprobs={},
-                from_draft=False,
-                prompt_tokens=len(prompt_tokens),
-                prompt_tps=0.0,
-                generation_tokens=0,
-                generation_tps=0.0,
-                peak_memory=mx.get_peak_memory() / 1e9,
-                finish_reason="stop"
-            )
-            return final_response
-    except Exception as e:
-        logger.error(f"Error in text generation: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

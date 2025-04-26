@@ -3,8 +3,8 @@ import time
 import gc
 import mlx.core as mx
 from fastapi import HTTPException
+from jet.llm.mlx.models import AVAILABLE_MODELS
 from jet.logger import logger
-from models_config import AVAILABLE_MODELS
 from mlx_lm import load
 
 # Shared model cache

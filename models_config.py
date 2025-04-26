@@ -12,6 +12,7 @@ AVAILABLE_MODELS = {
     "gemma3-4b": "mlx-community/gemma-3-4b-it-qat-4bit",
     "gemma3-12b": "mlx-community/gemma-3-12b-it-qat-4bit",
     "llama3.1-8b": "mlx-community/Llama-3.1-8B-Instruct-4bit",
+    "llama3.2-1b": "mlx-community/Llama-3.2-1B-Instruct-4bit",
     "llama3.2-3b": "mlx-community/Llama-3.2-3B-Instruct-4bit",
     "mistral-nemo": "mlx-community/Mistral-Nemo-Instruct-2407-4bit",
     "phi3.5-mini": "mlx-community/Phi-3.5-mini-instruct-4bit",

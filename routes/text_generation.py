@@ -14,21 +14,19 @@ class TextGenerationRequest(BaseModel):
     model: str
     prompt: str
     max_tokens: int = 300
-    verbose: bool = False
 
 
 class TextGenerationResponse(BaseModel):
     generated_text: str
 
 
-async def stream_tokens(model, tokenizer, prompt, max_tokens, verbose):
+async def stream_tokens(model, tokenizer, prompt, max_tokens):
     """Generator function to stream tokens from stream_generate."""
     for response in stream_generate(
         model,
         tokenizer,
         prompt=prompt,
         max_tokens=max_tokens,
-        verbose=verbose
     ):
         yield json.dumps({"token": response.text}) + "\n"
 
@@ -63,7 +61,6 @@ async def generate_text(request: TextGenerationRequest):
             tokenizer,
             prompt=prompt,
             max_tokens=request.max_tokens,
-            verbose=request.verbose
         )
 
         return TextGenerationResponse(generated_text=response)
@@ -100,7 +97,7 @@ async def stream_text(request: TextGenerationRequest):
         logger.info(f"Streaming text with model: {request.model}")
         return StreamingResponse(
             stream_tokens(model, tokenizer, prompt,
-                          request.max_tokens, request.verbose),
+                          request.max_tokens),
             media_type="application/x-ndjson"
         )
 

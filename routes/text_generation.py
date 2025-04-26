@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from jet.logger import logger
 from pydantic import BaseModel
 from mlx_lm import load, generate, stream_generate
+from models_config import AVAILABLE_MODELS
 import json
 import gc
 import mlx.core as mx

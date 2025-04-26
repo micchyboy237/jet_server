@@ -1,7 +1,8 @@
-import mlx.core as mx
-from typing import Union, List, Dict, Optional
-from transformers import PreTrainedTokenizer
+from mlx_lm import stream_generate
 from mlx_lm.tokenizer_utils import TokenizerWrapper
+from transformers import PreTrainedTokenizer
+from typing import Union, List, Dict, Optional
+import mlx.core as mx
 
 
 def get_max_context_length(model: 'nn.Module', max_kv_size: Optional[int] = None) -> int:
@@ -17,7 +18,7 @@ def get_max_context_length(model: 'nn.Module', max_kv_size: Optional[int] = None
     """
     # Try to get max context length from model configuration
     try:
-        max_context_length = model.config.max_position_embeddings
+        max_context_length = model.tokenizer.model_max_length
     except AttributeError:
         # Fallback to a default or max_kv_size if config doesn't specify
         max_context_length = max_kv_size if max_kv_size is not None else 2048  # Default fallback
@@ -53,7 +54,6 @@ def get_prompt_token_count(
         tokenizer = TokenizerWrapper(tokenizer)
 
     if isinstance(prompt, str):
-        # Encode string prompt, adding special tokens if needed
         tokens = tokenizer.encode(
             prompt, add_special_tokens=add_special_tokens)
     elif isinstance(prompt, mx.array):
@@ -62,6 +62,42 @@ def get_prompt_token_count(
         tokens = mx.array(prompt)
 
     return tokens.size if isinstance(tokens, mx.array) else len(tokens)
+
+
+def get_response_token_count(
+    model: 'nn.Module',
+    tokenizer: Union[PreTrainedTokenizer, TokenizerWrapper],
+    prompt: Union[str, mx.array, List[int]],
+    max_tokens: int = 100,
+    **kwargs
+) -> tuple[str, int]:
+    """
+    Calculate the token count for the generated response.
+
+    Args:
+        model (nn.Module): The MLX model.
+        tokenizer (Union[PreTrainedTokenizer, TokenizerWrapper]): The tokenizer.
+        prompt (Union[str, mx.array, List[int]]): The input prompt.
+        max_tokens (int): Maximum number of tokens to generate.
+        **kwargs: Additional arguments passed to stream_generate (e.g., sampler, draft_model).
+
+    Returns:
+        tuple[str, int]: The generated text and the number of tokens in the response.
+    """
+    if not isinstance(tokenizer, TokenizerWrapper):
+        tokenizer = TokenizerWrapper(tokenizer)
+
+    text = ""
+    response_token_count = 0
+
+    for response in stream_generate(model, tokenizer, prompt, max_tokens=max_tokens, **kwargs):
+        text += response.text
+        response_token_count = response.generation_tokens
+        # Stop if generation is complete (e.g., EOS or max_tokens reached)
+        if response.finish_reason in ["stop", "length"]:
+            break
+
+    return text, response_token_count
 
 
 def get_messages_token_count(

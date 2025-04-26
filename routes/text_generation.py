@@ -27,6 +27,7 @@ class TextGenerationRequest(BaseModel):
     model: str
     prompt: str
     max_tokens: int = 300
+    with_info: bool = False
 
 
 class TextGenerationResponse(BaseModel):
@@ -64,7 +65,7 @@ async def load_model(model_name: str):
         return MODEL_CACHE["model"], MODEL_CACHE["tokenizer"]
 
 
-async def stream_tokens(model, tokenizer, prompt, max_tokens):
+async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = False):
     """Generator function to stream tokens from stream_generate."""
     for response in stream_generate(
         model,
@@ -73,7 +74,10 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens):
         max_tokens=max_tokens,
     ):
         logger.success(response.text, flush=True)
-        yield json.dumps(make_serializable(response)) + "\n"
+        if with_info:
+            yield json.dumps(make_serializable(response)) + "\n"
+        else:
+            yield f"data: {response.text}\n\n"
 
 
 @router.post("/generate", response_model=TextGenerationResponse)
@@ -99,6 +103,7 @@ async def generate_text(request: TextGenerationRequest):
             tokenizer,
             prompt=prompt,
             max_tokens=request.max_tokens,
+            verbose=True
         )
         return TextGenerationResponse(generated_text=response)
     except Exception as e:
@@ -124,9 +129,11 @@ async def stream_text(request: TextGenerationRequest):
             )
         logger.info(f"Streaming text with model: {request.model}")
         logger.log("\nPrompt:", request.prompt, colors=["GRAY", "DEBUG"])
+        media_type = "application/x-ndjson" if request.with_info else "text/event-stream"
         return StreamingResponse(
-            stream_tokens(model, tokenizer, prompt, request.max_tokens),
-            media_type="application/x-ndjson"
+            stream_tokens(model, tokenizer, prompt,
+                          request.max_tokens, request.with_info),
+            media_type=media_type
         )
     except Exception as e:
         logger.error(f"Error streaming text: {str(e)}")

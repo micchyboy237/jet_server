@@ -26,7 +26,7 @@ MODEL_CACHE_LOCK = asyncio.Lock()
 class TextGenerationRequest(BaseModel):
     model: str
     prompt: str
-    max_tokens: int = 300
+    max_tokens: int = -1
     with_info: bool = False
     stop: list[str] = []
 

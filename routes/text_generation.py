@@ -108,16 +108,17 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = 
 
 
 @router.post("/generate", response_model=TextGenerationResponse)
-async def generate_text(request: TextGenerationRequest try:
+async def generate_text(request: TextGenerationRequest):
+    try:
         if request.model not in AVAILABLE_MODELS:
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
             )
-        model, tokenizer=await load_model(request.model)
+        model, tokenizer = await load_model(request.model)
         logger.info(f"Generating text with model: {request.model}")
         logger.log("\nPrompt:", request.prompt, colors=["GRAY", "DEBUG"])
-        response=generate(
+        response = generate(
             model,
             tokenizer,
             prompt=request.prompt,
@@ -135,7 +136,8 @@ async def generate_text(request: TextGenerationRequest try:
         logger.error(f"Error generating text: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@ router.post("/stream")
+
+@router.post("/stream")
 async def stream_text(request: TextGenerationRequest):
     try:
         if request.model not in AVAILABLE_MODELS:
@@ -143,10 +145,10 @@ async def stream_text(request: TextGenerationRequest):
                 status_code=400,
                 detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
             )
-        model, tokenizer=await load_model(request.model)
+        model, tokenizer = await load_model(request.model)
         logger.info(f"Streaming text with model: {request.model}")
         logger.log("\nPrompt:", request.prompt, colors=["GRAY", "DEBUG"])
-        media_type="application/x-ndjson" if request.with_info else "text/event-stream"
+        media_type = "application/x-ndjson" if request.with_info else "text/event-stream"
         return StreamingResponse(
             stream_tokens(model, tokenizer, request.prompt,
                           request.max_tokens, request.with_info),
@@ -156,7 +158,8 @@ async def stream_text(request: TextGenerationRequest):
         logger.error(f"Error streaming text: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@ router.post("/chat", response_model=TextGenerationResponse)
+
+@router.post("/chat", response_model=TextGenerationResponse)
 async def chat_text(request: TextGenerationRequest):
     try:
         if request.model not in AVAILABLE_MODELS:
@@ -164,8 +167,8 @@ async def chat_text(request: TextGenerationRequest):
                 status_code=400,
                 detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
             )
-        model, tokenizer=await load_model(request.model)
-        prompt=request.prompt
+        model, tokenizer = await load_model(request.model)
+        prompt = request.prompt
         if tokenizer.chat_template is not None:
             messages = [{"role": "user", "content": prompt}]
             prompt = tokenizer.apply_chat_template(

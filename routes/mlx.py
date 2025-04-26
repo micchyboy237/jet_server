@@ -1,3 +1,4 @@
+from jet.transformers.formatters import format_json
 import mlx.core as mx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
@@ -6,6 +7,7 @@ from fastapi.responses import StreamingResponse
 from mlx_lm import load, generate, stream_generate
 from mlx_lm.sample_utils import make_sampler
 from model_cache import MODEL_CACHE, MODEL_CACHE_LOCK, load_model
+from jet.llm.mlx.utils import get_model_max_tokens
 from jet.logger import logger
 import time
 
@@ -111,6 +113,24 @@ async def chat(request: ChatRequest):
             logger.info(f"Streaming text with model: {request.model}")
             logger.log("\nPrompt:", prompt, colors=["GRAY", "DEBUG"])
 
+            model_max_tokens = get_model_max_tokens(request.model)
+
+            logger.newline()
+            logger.log("Options:", format_json(
+                options), colors=["GRAY", "DEBUG"])
+            logger.log("Model:", request.model, colors=["GRAY", "DEBUG"])
+
+            logger.newline()
+            logger.log("Prompt Tokens:", len(prompt_tokens),
+                       colors=["GRAY", "ORANGE"])
+            logger.log("Model Max Tokens:", model_max_tokens,
+                       colors=["GRAY", "INFO"])
+            remaining_tokens = model_max_tokens - len(prompt_tokens)
+            remaining_percentage = round(
+                (remaining_tokens / model_max_tokens) * 100, 2)
+            logger.log("Remaining Tokens:", f"{remaining_tokens} ({remaining_percentage}%)", colors=[
+                       "GRAY", "INFO"])
+
             async def stream_response():
                 async with MODEL_CACHE_LOCK:
                     MODEL_CACHE["last_used"] = time.time()
@@ -123,6 +143,26 @@ async def chat(request: ChatRequest):
                 ):
                     logger.success(response.text, flush=True)
                     yield f"data: {response.text}\n\n"
+
+                    if response.finish_reason:
+                        logger.newline()
+                        total_tokens = response.prompt_tokens + response.generation_tokens
+                        logger.log("Prompt Tokens:", response.prompt_tokens, colors=[
+                                   "GRAY", "ORANGE"])
+                        logger.log("Response Tokens:", response.generation_tokens, colors=[
+                                   "GRAY", "ORANGE"])
+                        logger.log("Total Tokens:", total_tokens,
+                                   colors=["GRAY", "ORANGE"])
+                        logger.newline()
+                        logger.log("Model Max Tokens:",
+                                   model_max_tokens, colors=["GRAY", "INFO"])
+                        remaining_tokens = model_max_tokens - total_tokens
+                        remaining_percentage = round(
+                            (remaining_tokens / model_max_tokens) * 100, 2)
+                        logger.log("Remaining Tokens:", f"{remaining_tokens} ({remaining_percentage}%)", colors=[
+                                   "GRAY", "INFO"])
+                        logger.newline()
+
                     async with MODEL_CACHE_LOCK:
                         MODEL_CACHE["last_used"] = time.time()
             return StreamingResponse(

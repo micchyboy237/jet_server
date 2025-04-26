@@ -72,7 +72,7 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens):
         max_tokens=max_tokens,
     ):
         logger.success(response.text, flush=True)
-        yield json.dumps({"token": response.text}) + "\n"
+        yield json.dumps(response) + "\n"
 
 
 @router.post("/generate", response_model=TextGenerationResponse)

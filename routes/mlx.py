@@ -152,6 +152,7 @@ async def chat(request: ChatRequest):
                     if response.finish_reason:
                         logger.newline()
                         total_tokens = response.prompt_tokens + response.generation_tokens
+                        total_tps = response.prompt_tps + response.generation_tps
                         logger.log(
                             "Prompt:",
                             f"{response.prompt_tokens} tokens,",
@@ -167,10 +168,15 @@ async def chat(request: ChatRequest):
                         logger.log(
                             f"Peak memory:",
                             f"{response.peak_memory:.3f}",
-                            colors=["GRAY", "ORANGE"]
+                            "GB",
+                            colors=["GRAY", "ORANGE", "GRAY"]
                         )
-                        logger.log("Total Tokens:", total_tokens,
-                                   colors=["GRAY", "ORANGE"])
+                        logger.log(
+                            "Total:",
+                            f"{total_tokens} tokens,",
+                            f"{total_tps:.3f} tokens-per-sec",
+                            colors=["GRAY", "SUCCESS", "GRAY"]
+                        )
                         logger.newline()
                         logger.log("Model Max Tokens:",
                                    model_max_tokens, colors=["GRAY", "INFO"])

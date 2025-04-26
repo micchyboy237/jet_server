@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from jet.logger import logger
+from jet.transformers.object import make_serializable
 from pydantic import BaseModel
 from mlx_lm import load, generate, stream_generate
 from models_config import AVAILABLE_MODELS
@@ -72,7 +73,7 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens):
         max_tokens=max_tokens,
     ):
         logger.success(response.text, flush=True)
-        yield json.dumps(response) + "\n"
+        yield json.dumps(make_serializable(response)) + "\n"
 
 
 @router.post("/generate", response_model=TextGenerationResponse)

@@ -70,7 +70,7 @@ def process_options(options: Optional[Dict[str, Any]]) -> tuple[Dict[str, Any], 
         "seed": int,
         "stop": str,
         "num_predict": int,
-        "max_kv_size": int
+        "num_keep": int
     }
     sampler_options = {
         "temperature": float,
@@ -85,14 +85,19 @@ def process_options(options: Optional[Dict[str, Any]]) -> tuple[Dict[str, Any], 
             if key in valid_options and isinstance(value, valid_options[key]):
                 if key == "num_predict":
                     processed["max_tokens"] = value
+                elif key == "num_keep":
+                    sampler_params["min_tokens_to_keep"] = value
                 else:
                     processed[key] = value
             elif key in sampler_options and isinstance(value, sampler_options[key]):
                 sampler_params[key] = value
+    if processed.get("seed") is not None:
+        mx.random.seed(processed["seed"])
     temp = sampler_params.get("temperature", 0.8)
     top_p = sampler_params.get("top_p", 0.9)
     min_p = sampler_params.get("min_p", 0.0)
-    min_tokens_to_keep = sampler_params.get("min_tokens_to_keep", 1)
+    min_tokens_to_keep = sampler_params.get(
+        "min_tokens_to_keep", 1)  # Default to 1 if not set
     sampler = make_sampler(temp, top_p, min_p, min_tokens_to_keep)
     return processed, sampler
 

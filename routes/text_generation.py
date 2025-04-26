@@ -86,7 +86,9 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = 
         # Update last used time at start
         MODEL_CACHE["last_used"] = time.time()
 
-    accumulated_text = ""
+    for stop_token in stop:
+        tokenizer.add_eos_token(stop_token)
+
     for response in stream_generate(
         model,
         tokenizer,
@@ -95,28 +97,12 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = 
     ):
         logger.success(response.text, flush=True)
         text = response.text.replace("\r\n", "\n")
-        accumulated_text += text
-
-        # Check for stop sequences
-        stop_detected = False
-        for stop_seq in stop:
-            if stop_seq in accumulated_text:
-                # Truncate accumulated text up to the stop sequence
-                stop_index = accumulated_text.index(stop_seq)
-                text_to_yield = accumulated_text[:stop_index]
-                accumulated_text = text_to_yield  # Update accumulated text
-                stop_detected = True
-                break
 
         # Yield the current text
         if with_info:
             yield json.dumps(make_serializable(response)) + "\n"
         else:
             yield f"data: {text}\n\n"
-
-        # Break if a stop sequence was detected
-        if stop_detected:
-            break
 
     async with MODEL_CACHE_LOCK:
         MODEL_CACHE["last_used"] = time.time()  # Update last used time at end

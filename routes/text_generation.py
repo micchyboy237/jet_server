@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
+from jet.logger import logger
 from pydantic import BaseModel
 from mlx_lm import load, generate, stream_generate
 import logging
@@ -22,12 +23,15 @@ class TextGenerationResponse(BaseModel):
 
 async def stream_tokens(model, tokenizer, prompt, max_tokens):
     """Generator function to stream tokens from stream_generate."""
+    logger.gray("\nPrompt:")
+    logger.debug(prompt)
     for response in stream_generate(
         model,
         tokenizer,
         prompt=prompt,
         max_tokens=max_tokens,
     ):
+        logger.success(response.text, flush=True)
         yield json.dumps({"token": response.text}) + "\n"
 
 

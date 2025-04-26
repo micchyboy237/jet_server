@@ -1,3 +1,4 @@
+# jet_server/routes/text_generation.py
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 from jet.logger import logger
@@ -13,15 +14,11 @@ import time
 
 router = APIRouter()
 
-# Configuration for model cache duration (in seconds)
-MODEL_CACHE_DURATION = 0
-
 MODEL_CACHE = {
     "model": None,
     "tokenizer": None,
     "model_name": None,
-    "last_used": None,
-    "is_streaming": False  # Track if streaming is in progress
+    "last_used": None  # Track last usage time
 }
 MODEL_CACHE_LOCK = asyncio.Lock()
 
@@ -45,9 +42,8 @@ def unload_current_model():
         MODEL_CACHE["tokenizer"] = None
         MODEL_CACHE["model_name"] = None
         MODEL_CACHE["last_used"] = None
-        MODEL_CACHE["is_streaming"] = False
-        gc.collect()
         mx.clear_cache()
+        gc.collect()
         logger.info("Model unloaded and memory cleared.")
 
 
@@ -62,55 +58,46 @@ async def load_model(model_name: str):
             MODEL_CACHE["model"] = model
             MODEL_CACHE["tokenizer"] = tokenizer
             MODEL_CACHE["model_name"] = model_name
-            MODEL_CACHE["last_used"] = time.time()
+            MODEL_CACHE["last_used"] = time.time()  # Update last used time
             logger.info(f"Model {model_name} loaded and cached.")
         else:
+            # Update last used time if model is already loaded
             MODEL_CACHE["last_used"] = time.time()
         return MODEL_CACHE["model"], MODEL_CACHE["tokenizer"]
 
 
 async def cleanup_idle_models():
-    """Background task to unload models idle for more than MODEL_CACHE_DURATION."""
+    """Background task to unload models idle for more than 1 minute."""
     while True:
         async with MODEL_CACHE_LOCK:
-            if (MODEL_CACHE["model"] is not None and
-                MODEL_CACHE["last_used"] is not None and
-                    not MODEL_CACHE["is_streaming"]):  # Skip if streaming
+            if MODEL_CACHE["model"] is not None and MODEL_CACHE["last_used"] is not None:
                 idle_time = time.time() - MODEL_CACHE["last_used"]
-                if idle_time > MODEL_CACHE_DURATION:
+                if idle_time > 60:  # 1 minute in seconds
                     logger.info(
                         f"Model {MODEL_CACHE['model_name']} idle for {idle_time:.2f} seconds, unloading.")
                     unload_current_model()
-        await asyncio.sleep(10)
+        await asyncio.sleep(10)  # Check every 10 seconds
 
 
 async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = False):
     """Generator function to stream tokens from stream_generate."""
     async with MODEL_CACHE_LOCK:
+        # Update last used time at start
         MODEL_CACHE["last_used"] = time.time()
-        MODEL_CACHE["is_streaming"] = True  # Mark streaming as active
-    try:
-        for response in stream_generate(
-            model,
-            tokenizer,
-            prompt=prompt,
-            max_tokens=max_tokens,
-        ):
-            logger.success(response.text, flush=True)
-            text = response.text.replace("\r\n", "\n")
-            if with_info:
-                yield json.dumps(make_serializable(response)) + "\n"
-            else:
-                yield f"data: {text}\n\n"
-    finally:
-        # Unload model after streaming is complete if MODEL_CACHE_DURATION is 0
-        async with MODEL_CACHE_LOCK:
-            MODEL_CACHE["last_used"] = time.time()
-            MODEL_CACHE["is_streaming"] = False  # Mark streaming as complete
-            if MODEL_CACHE_DURATION == 0:
-                logger.info(
-                    f"Streaming complete for model {MODEL_CACHE['model_name']}, unloading immediately.")
-                unload_current_model()
+    for response in stream_generate(
+        model,
+        tokenizer,
+        prompt=prompt,
+        max_tokens=max_tokens,
+    ):
+        logger.success(response.text, flush=True)
+        text = response.text.replace("\r\n", "\n")
+        if with_info:
+            yield json.dumps(make_serializable(response)) + "\n"
+        else:
+            yield f"data: {text}\n\n"
+    async with MODEL_CACHE_LOCK:
+        MODEL_CACHE["last_used"] = time.time()  # Update last used time at end
 
 
 @router.post("/generate", response_model=TextGenerationResponse)
@@ -132,11 +119,7 @@ async def generate_text(request: TextGenerationRequest):
             verbose=True
         )
         async with MODEL_CACHE_LOCK:
-            MODEL_CACHE["last_used"] = time.time()
-            if MODEL_CACHE_DURATION == 0:
-                logger.info(
-                    f"Generation complete for model {MODEL_CACHE['model_name']}, unloading immediately.")
-                unload_current_model()
+            MODEL_CACHE["last_used"] = time.time()  # Update last used time
         return TextGenerationResponse(generated_text=response)
     except Exception as e:
         logger.error(f"Error generating text: {str(e)}")
@@ -190,11 +173,7 @@ async def chat_text(request: TextGenerationRequest):
             verbose=True
         )
         async with MODEL_CACHE_LOCK:
-            MODEL_CACHE["last_used"] = time.time()
-            if MODEL_CACHE_DURATION == 0:
-                logger.info(
-                    f"Chat generation complete for model {MODEL_CACHE['model_name']}, unloading immediately.")
-                unload_current_model()
+            MODEL_CACHE["last_used"] = time.time()  # Update last used time
         return TextGenerationResponse(generated_text=response)
     except Exception as e:
         logger.error(f"Error in chat generation: {str(e)}")

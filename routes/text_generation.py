@@ -47,7 +47,7 @@ def unload_current_model():
         MODEL_CACHE["last_used"] = None
         MODEL_CACHE["is_streaming"] = False
         gc.collect()
-        mx.metal.clear_cache()
+        mx.clear_cache()
         logger.info("Model unloaded and memory cleared.")
 
 

@@ -5,37 +5,18 @@ from typing import Union, List, Dict, Optional
 import mlx.core as mx
 
 
-def get_max_context_length(
-    tokenizer: Union[PreTrainedTokenizer, TokenizerWrapper],
-    max_kv_size: Optional[int] = None
-) -> int:
+def get_max_context_length(model: 'nn.Module', max_kv_size: Optional[int] = None) -> int:
     """
-    Retrieve the maximum context length using the tokenizer's configuration.
+    Retrieve the maximum context length of the model (input + output tokens).
 
     Args:
-        tokenizer (Union[PreTrainedTokenizer, TokenizerWrapper]): The tokenizer.
+        model (nn.Module): The MLX model.
         max_kv_size (Optional[int]): The maximum key-value cache size, if specified.
 
     Returns:
         int: The maximum context length (in tokens).
     """
-    if not isinstance(tokenizer, TokenizerWrapper):
-        tokenizer = TokenizerWrapper(tokenizer)
-
-    # Try to get max context length from tokenizer configuration
-    max_context_length = None
-    try:
-        max_context_length = tokenizer.model_max_length
-        if not isinstance(max_context_length, int) or max_context_length <= 0:
-            max_context_length = None
-    except AttributeError:
-        pass
-
-    # Fall back to max_kv_size or default if tokenizer doesn't provide a valid value
-    if max_context_length is None:
-        max_context_length = max_kv_size if max_kv_size is not None else 2048
-        print(
-            f"Warning: tokenizer.model_max_length not found. Using default: {max_context_length}.")
+    max_context_length = get_hidden_size(model)
 
     # If max_kv_size is specified and smaller, it limits the context length
     if max_kv_size is not None and max_kv_size < max_context_length:
@@ -44,6 +25,27 @@ def get_max_context_length(
             f"Max context length limited by max_kv_size: {max_context_length}")
 
     return max_context_length
+
+
+def get_hidden_size(model: 'nn.Module') -> int:
+    """
+    Retrieve the hidden size (embedding dimension) of the model.
+
+    Args:
+        model (nn.Module): The MLX model.
+
+    Returns:
+        int: The hidden size of the model.
+
+    Raises:
+        AttributeError: If neither hidden_size nor n_embd is found in the model configuration.
+    """
+    try:
+        hidden_size = model.model.args.hidden_size
+        return hidden_size
+    except AttributeError:
+        raise AttributeError(
+            "Neither hidden_size nor n_embd found in model configuration.")
 
 
 def get_prompt_token_count(
@@ -76,42 +78,6 @@ def get_prompt_token_count(
     return tokens.size if isinstance(tokens, mx.array) else len(tokens)
 
 
-def get_response_token_count(
-    model: 'nn.Module',
-    tokenizer: Union[PreTrainedTokenizer, TokenizerWrapper],
-    prompt: Union[str, mx.array, List[int]],
-    max_tokens: int = 100,
-    **kwargs
-) -> tuple[str, int]:
-    """
-    Calculate the token count for the generated response.
-
-    Args:
-        model (nn.Module): The MLX model.
-        tokenizer (Union[PreTrainedTokenizer, TokenizerWrapper]): The tokenizer.
-        prompt (Union[str, mx.array, List[int]]): The input prompt.
-        max_tokens (int): Maximum number of tokens to generate.
-        **kwargs: Additional arguments passed to stream_generate (e.g., sampler, draft_model).
-
-    Returns:
-        tuple[str, int]: The generated text and the number of tokens in the response.
-    """
-    if not isinstance(tokenizer, TokenizerWrapper):
-        tokenizer = TokenizerWrapper(tokenizer)
-
-    text = ""
-    response_token_count = 0
-
-    for response in stream_generate(model, tokenizer, prompt, max_tokens=max_tokens, **kwargs):
-        text += response.text
-        response_token_count = response.generation_tokens
-        # Stop if generation is complete (e.g., EOS or max_tokens reached)
-        if response.finish_reason in ["stop", "length"]:
-            break
-
-    return text, response_token_count
-
-
 def get_messages_token_count(
     tokenizer: Union[PreTrainedTokenizer, TokenizerWrapper],
     messages: List[Dict[str, str]],
@@ -139,7 +105,6 @@ def get_messages_token_count(
 
     chat_template_config = chat_template_config or {}
 
-    # Apply chat template if available
     if tokenizer.chat_template is not None:
         prompt = tokenizer.apply_chat_template(
             messages,
@@ -151,7 +116,6 @@ def get_messages_token_count(
         tokens = tokenizer.encode(
             prompt, add_special_tokens=add_special_tokens)
     else:
-        # Concatenate message contents and encode
         prompt = "".join(message["content"] for message in messages)
         tokens = tokenizer.encode(
             prompt, add_special_tokens=add_special_tokens)
@@ -190,3 +154,38 @@ def get_individual_message_token_counts(
             "token_count": token_count
         })
     return result
+
+
+def get_response_token_count(
+    model: 'nn.Module',
+    tokenizer: Union[PreTrainedTokenizer, TokenizerWrapper],
+    prompt: Union[str, mx.array, List[int]],
+    max_tokens: int = 100,
+    **kwargs
+) -> tuple[str, int]:
+    """
+    Calculate the token count for the generated response.
+
+    Args:
+        model (nn.Module): The MLX model.
+        tokenizer (Union[PreTrainedTokenizer, TokenizerWrapper]): The tokenizer.
+        prompt (Union[str, mx.array, List[int]]): The input prompt.
+        max_tokens (int): Maximum number of tokens to generate.
+        **kwargs: Additional arguments passed to stream_generate (e.g., sampler, draft_model).
+
+    Returns:
+        tuple[str, int]: The generated text and the number of tokens in the response.
+    """
+    if not isinstance(tokenizer, TokenizerWrapper):
+        tokenizer = TokenizerWrapper(tokenizer)
+
+    text = ""
+    response_token_count = 0
+
+    for response in stream_generate(model, tokenizer, prompt, max_tokens=max_tokens, **kwargs):
+        text += response.text
+        response_token_count = response.generation_tokens
+        if response.finish_reason in ["stop", "length"]:
+            break
+
+    return text, response_token_count

@@ -93,6 +93,7 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = 
         prompt=prompt,
         max_tokens=max_tokens
     ):
+        logger.success(response.text, flush=True)
         text = response.text.replace("\r\n", "\n")
         accumulated_text += text
 

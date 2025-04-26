@@ -88,20 +88,15 @@ async def generate_text(request: TextGenerationRequest):
                 status_code=400,
                 detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
             )
-        # Load model, unloading the previous one if necessary
         model, tokenizer = await load_model(request.model)
-        prompt = request.prompt
-        if tokenizer.chat_template is not None:
-            messages = [{"role": "user", "content": prompt}]
-            prompt = tokenizer.apply_chat_template(
-                messages, add_generation_prompt=True
-            )
+
         logger.info(f"Generating text with model: {request.model}")
         logger.log("\nPrompt:", request.prompt, colors=["GRAY", "DEBUG"])
+
         response = generate(
             model,
             tokenizer,
-            prompt=prompt,
+            prompt=request.prompt,
             max_tokens=request.max_tokens,
             verbose=True
         )
@@ -119,22 +114,50 @@ async def stream_text(request: TextGenerationRequest):
                 status_code=400,
                 detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
             )
-        # Load model, unloading the previous one if necessary
         model, tokenizer = await load_model(request.model)
-        prompt = request.prompt
-        if tokenizer.chat_template is not None:
-            messages = [{"role": "user", "content": prompt}]
-            prompt = tokenizer.apply_chat_template(
-                messages, add_generation_prompt=True
-            )
+
         logger.info(f"Streaming text with model: {request.model}")
         logger.log("\nPrompt:", request.prompt, colors=["GRAY", "DEBUG"])
+
         media_type = "application/x-ndjson" if request.with_info else "text/event-stream"
         return StreamingResponse(
-            stream_tokens(model, tokenizer, prompt,
+            stream_tokens(model, tokenizer, request.prompt,
                           request.max_tokens, request.with_info),
             media_type=media_type
         )
     except Exception as e:
         logger.error(f"Error streaming text: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/chat", response_model=TextGenerationResponse)
+async def chat_text(request: TextGenerationRequest):
+    try:
+        if request.model not in AVAILABLE_MODELS:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
+            )
+        model, tokenizer = await load_model(request.model)
+        prompt = request.prompt
+
+        if tokenizer.chat_template is not None:
+            messages = [{"role": "user", "content": prompt}]
+            prompt = tokenizer.apply_chat_template(
+                messages, add_generation_prompt=True
+            )
+
+        logger.info(f"Chat generation with model: {request.model}")
+        logger.log("\nChat prompt:", request.prompt, colors=["GRAY", "DEBUG"])
+
+        response = generate(
+            model,
+            tokenizer,
+            prompt=prompt,
+            max_tokens=request.max_tokens,
+            verbose=True
+        )
+        return TextGenerationResponse(generated_text=response)
+    except Exception as e:
+        logger.error(f"Error in chat generation: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

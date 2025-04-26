@@ -3,12 +3,22 @@ from fastapi.responses import StreamingResponse
 from jet.logger import logger
 from pydantic import BaseModel
 from mlx_lm import load, generate, stream_generate
-import logging
-from models_config import AVAILABLE_MODELS
 import json
+import gc
+import mlx.core as mx
+import asyncio
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+
+# Global cache to store the currently loaded model and tokenizer
+MODEL_CACHE = {
+    "model": None,
+    "tokenizer": None,
+    "model_name": None
+}
+
+# Lock to ensure thread-safe model loading/unloading
+MODEL_CACHE_LOCK = asyncio.Lock()
 
 
 class TextGenerationRequest(BaseModel):
@@ -19,6 +29,37 @@ class TextGenerationRequest(BaseModel):
 
 class TextGenerationResponse(BaseModel):
     generated_text: str
+
+
+def unload_current_model():
+    """Unload the currently cached model to free RAM."""
+    if MODEL_CACHE["model"] is not None:
+        logger.info(f"Unloading model: {MODEL_CACHE['model_name']}")
+        # Delete references to model and tokenizer
+        MODEL_CACHE["model"] = None
+        MODEL_CACHE["tokenizer"] = None
+        MODEL_CACHE["model_name"] = None
+        # Force garbage collection and clear MLX memory
+        gc.collect()
+        mx.metal.clear_cache()  # Clear MLX metal cache
+        logger.info("Model unloaded and memory cleared.")
+
+
+async def load_model(model_name: str):
+    """Load a model and update the cache, unloading the current model if necessary."""
+    async with MODEL_CACHE_LOCK:
+        if model_name != MODEL_CACHE["model_name"]:
+            # Unload the current model if a different model is requested
+            unload_current_model()
+            model_path = AVAILABLE_MODELS[model_name]
+            logger.info(f"Loading model: {model_path}")
+            model, tokenizer = load(model_path)
+            # Update the cache
+            MODEL_CACHE["model"] = model
+            MODEL_CACHE["tokenizer"] = tokenizer
+            MODEL_CACHE["model_name"] = model_name
+            logger.info(f"Model {model_name} loaded and cached.")
+        return MODEL_CACHE["model"], MODEL_CACHE["tokenizer"]
 
 
 async def stream_tokens(model, tokenizer, prompt, max_tokens):
@@ -38,27 +79,19 @@ async def stream_tokens(model, tokenizer, prompt, max_tokens):
 @router.post("/generate", response_model=TextGenerationResponse)
 async def generate_text(request: TextGenerationRequest):
     try:
-        # Validate model
         if request.model not in AVAILABLE_MODELS:
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
             )
-
-        # Load model and tokenizer
-        model_path = AVAILABLE_MODELS[request.model]
-        logger.info(f"Loading model: {model_path}")
-        model, tokenizer = load(model_path)
-
-        # Prepare prompt
+        # Load model, unloading the previous one if necessary
+        model, tokenizer = await load_model(request.model)
         prompt = request.prompt
         if tokenizer.chat_template is not None:
             messages = [{"role": "user", "content": prompt}]
             prompt = tokenizer.apply_chat_template(
                 messages, add_generation_prompt=True
             )
-
-        # Generate response
         logger.info(f"Generating text with model: {request.model}")
         response = generate(
             model,
@@ -66,9 +99,7 @@ async def generate_text(request: TextGenerationRequest):
             prompt=prompt,
             max_tokens=request.max_tokens,
         )
-
         return TextGenerationResponse(generated_text=response)
-
     except Exception as e:
         logger.error(f"Error generating text: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -77,34 +108,24 @@ async def generate_text(request: TextGenerationRequest):
 @router.post("/stream")
 async def stream_text(request: TextGenerationRequest):
     try:
-        # Validate model
         if request.model not in AVAILABLE_MODELS:
             raise HTTPException(
                 status_code=400,
                 detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
             )
-
-        # Load model and tokenizer
-        model_path = AVAILABLE_MODELS[request.model]
-        logger.info(f"Loading model: {model_path}")
-        model, tokenizer = load(model_path)
-
-        # Prepare prompt
+        # Load model, unloading the previous one if necessary
+        model, tokenizer = await load_model(request.model)
         prompt = request.prompt
         if tokenizer.chat_template is not None:
             messages = [{"role": "user", "content": prompt}]
             prompt = tokenizer.apply_chat_template(
                 messages, add_generation_prompt=True
             )
-
-        # Stream response
         logger.info(f"Streaming text with model: {request.model}")
         return StreamingResponse(
-            stream_tokens(model, tokenizer, prompt,
-                          request.max_tokens),
+            stream_tokens(model, tokenizer, prompt, request.max_tokens),
             media_type="application/x-ndjson"
         )
-
     except Exception as e:
         logger.error(f"Error streaming text: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

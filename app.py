@@ -12,10 +12,10 @@ from routes.graph import router as graph_router
 from routes.job.cover_letter import router as cover_letter_router
 from routes.eval.faithfulness import router as faithfulness_router
 from routes.evaluation import router as evaluation_router
+from routes.text_generation import router as text_generation_router
 from middlewares import log_exceptions_middleware
 from jet.llm.ollama.base import initialize_ollama_settings
 from jet.logger import logger
-
 from starlette.middleware.base import BaseHTTPMiddleware
 
 initialize_ollama_settings()
@@ -23,7 +23,6 @@ os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
 app = FastAPI()
 
-# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,21 +31,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.middleware("http")(auth_memgraph_middleware)
-
-
-# Middleware to Catch 401 Errors and Retry
-# app.add_middleware(AuthMemgraphRetryOn401Middleware)
 app.middleware("http")(log_exceptions_middleware)
 
 
-# Exception Handler for 401 Unauthorized Errors
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
-
-# Include routers
 app.include_router(rag_router, prefix="/api/v1/rag", tags=["rag"])
 app.include_router(reranker_heuristic_router,
                    prefix="/api/v1/reranker/heuristic", tags=["reranker", "heuristic"])
@@ -62,6 +53,8 @@ app.include_router(evaluation_router,
                    prefix="/api/v1/evaluation", tags=["evaluation", "models"])
 app.include_router(faithfulness_router,
                    prefix="/api/v1/eval/faithfulness", tags=["evaluation", "faithfulness"])
+app.include_router(text_generation_router,
+                   prefix="/api/v1/text-generation", tags=["text-generation"])
 
 if __name__ == "__main__":
     import uvicorn
@@ -73,6 +66,4 @@ if __name__ == "__main__":
         reload_dirs=[
             "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules"
         ],
-        # reload_excludes=["**/.venv/**"],  # Exclude .venv from being watched
     )
-    # uvicorn.run("app:app", host="0.0.0.0", port=8002)

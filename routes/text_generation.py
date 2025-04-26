@@ -1,4 +1,3 @@
-# jet_server/routes/text_generation.py
 from typing import Optional
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
@@ -81,24 +80,44 @@ async def cleanup_idle_models():
         await asyncio.sleep(10)  # Check every 10 seconds
 
 
-async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = False, **kwargs):
-    """Generator function to stream tokens from stream_generate."""
+async def stream_tokens(model, tokenizer, prompt, max_tokens, with_info: bool = False, stop: list[str] = []):
+    """Generator function to stream tokens from stream_generate with stop sequence handling."""
     async with MODEL_CACHE_LOCK:
         # Update last used time at start
         MODEL_CACHE["last_used"] = time.time()
+
+    accumulated_text = ""
     for response in stream_generate(
         model,
         tokenizer,
         prompt=prompt,
-        max_tokens=max_tokens,
-        **kwargs
+        max_tokens=max_tokens
     ):
         logger.success(response.text, flush=True)
         text = response.text.replace("\r\n", "\n")
+        accumulated_text += text
+
+        # Check for stop sequences
+        stop_detected = False
+        for stop_seq in stop:
+            if stop_seq in accumulated_text:
+                # Truncate accumulated text up to the stop sequence
+                stop_index = accumulated_text.index(stop_seq)
+                text_to_yield = accumulated_text[:stop_index]
+                accumulated_text = text_to_yield  # Update accumulated text
+                stop_detected = True
+                break
+
+        # Yield the current text
         if with_info:
             yield json.dumps(make_serializable(response)) + "\n"
         else:
             yield f"data: {text}\n\n"
+
+        # Break if a stop sequence was detected
+        if stop_detected:
+            break
+
     async with MODEL_CACHE_LOCK:
         MODEL_CACHE["last_used"] = time.time()  # Update last used time at end
 
@@ -112,18 +131,16 @@ async def generate_text(request: TextGenerationRequest):
                 detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
             )
         model, tokenizer = await load_model(request.model)
-
-        for stop in request.stop:
-            tokenizer.add_eos_token(stop)
-
         logger.info(f"Generating text with model: {request.model}")
         logger.log("\nPrompt:", request.prompt, colors=["GRAY", "DEBUG"])
-
+        for stop in request.stop:
+            tokenizer.add_eos_token(stop)
         response = generate(
             model,
             tokenizer,
             prompt=request.prompt,
             max_tokens=request.max_tokens,
+            stop=request.stop,
             verbose=True
         )
         async with MODEL_CACHE_LOCK:
@@ -143,16 +160,18 @@ async def stream_text(request: TextGenerationRequest):
                 detail=f"Invalid model. Available models: {list(AVAILABLE_MODELS.keys())}"
             )
         model, tokenizer = await load_model(request.model)
-        for stop in request.stop:
-            tokenizer.add_eos_token(stop)
-
         logger.info(f"Streaming text with model: {request.model}")
         logger.log("\nPrompt:", request.prompt, colors=["GRAY", "DEBUG"])
         media_type = "application/x-ndjson" if request.with_info else "text/event-stream"
-
         return StreamingResponse(
-            stream_tokens(model, tokenizer, request.prompt,
-                          request.max_tokens, request.with_info),
+            stream_tokens(
+                model,
+                tokenizer,
+                request.prompt,
+                request.max_tokens,
+                request.with_info,
+                stop=request.stop
+            ),
             media_type=media_type
         )
     except Exception as e:
@@ -177,11 +196,14 @@ async def chat_text(request: TextGenerationRequest):
             )
         logger.info(f"Chat generation with model: {request.model}")
         logger.log("\nChat prompt:", request.prompt, colors=["GRAY", "DEBUG"])
+        for stop in request.stop:
+            tokenizer.add_eos_token(stop)
         response = generate(
             model,
             tokenizer,
             prompt=prompt,
             max_tokens=request.max_tokens,
+            stop=request.stop,
             verbose=True
         )
         async with MODEL_CACHE_LOCK:

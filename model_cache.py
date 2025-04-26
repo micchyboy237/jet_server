@@ -14,6 +14,7 @@ MODEL_CACHE = {
     "model_name": None,
     "last_used": None
 }
+MODEL_CACHE_DURATION = 180  # 3 minutes
 MODEL_CACHE_LOCK = asyncio.Lock()
 
 
@@ -54,12 +55,12 @@ async def load_model(model_name: str):
 
 
 async def cleanup_idle_models():
-    """Background task to unload models idle for more than 1 minute."""
+    """Background task to unload models idle for more than MODEL_CACHE_DURATION."""
     while True:
         async with MODEL_CACHE_LOCK:
             if MODEL_CACHE["model"] is not None and MODEL_CACHE["last_used"] is not None:
                 idle_time = time.time() - MODEL_CACHE["last_used"]
-                if idle_time > 60:
+                if idle_time > MODEL_CACHE_DURATION:
                     logger.info(
                         f"Model {MODEL_CACHE['model_name']} idle for {idle_time:.2f} seconds, unloading.")
                     unload_current_model()

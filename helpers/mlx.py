@@ -93,6 +93,31 @@ class Usage(BaseModel):
     total_tokens: int = Field(..., description="Total number of tokens")
 
 
+class UnifiedCompletionResponse(BaseModel):
+    id: str = Field(..., description="Unique identifier for the completion")
+    object: Literal["completion",
+                    "completion.chunk"] = Field(..., description="Type of response")
+    created: int = Field(...,
+                         description="Timestamp for when the request was processed")
+    model: str = Field(..., description="Model repo or path")
+    content: Optional[str] = Field(
+        None, description="Generated content (text or message)")
+    finish_reason: Optional[Literal["stop", "length"]] = Field(
+        None, description="Reason the completion ended")
+    usage: Optional[Usage] = Field(None, description="Token usage information")
+
+
+class ModelInfo(BaseModel):
+    id: str = Field(..., description="Hugging Face repo ID")
+    created: int = Field(..., description="Timestamp for model creation")
+
+
+class ModelsResponse(BaseModel):
+    data: List[ModelInfo] = Field(..., description="List of available models")
+
+# Internal Response Models (for parsing server responses)
+
+
 class LogProbs(BaseModel):
     token_logprobs: List[float] = Field(
         default_factory=list, description="Log probabilities for generated tokens")
@@ -116,7 +141,7 @@ class Choice(BaseModel):
         None, description="Reason the completion ended")
 
 
-class ChatCompletionResponse(BaseModel):
+class ServerCompletionResponse(BaseModel):
     id: str = Field(..., description="Unique identifier for the chat")
     system_fingerprint: str = Field(...,
                                     description="Unique identifier for the system")
@@ -128,21 +153,12 @@ class ChatCompletionResponse(BaseModel):
     choices: List[Choice] = Field(..., description="List of output choices")
     usage: Optional[Usage] = Field(None, description="Token usage information")
 
-
-class ModelInfo(BaseModel):
-    id: str = Field(..., description="Hugging Face repo ID")
-    created: int = Field(..., description="Timestamp for model creation")
-
-
-class ModelsResponse(BaseModel):
-    data: List[ModelInfo] = Field(..., description="List of available models")
-
 # Helper Function
 
 
-def _handle_response(response: requests.Response, is_stream: bool, object_type: str) -> Union[ChatCompletionResponse, Generator[ChatCompletionResponse, None, None]]:
+def _handle_response(response: requests.Response, is_stream: bool, object_type: str) -> Union[UnifiedCompletionResponse, Generator[UnifiedCompletionResponse, None, None]]:
     """
-    Handle streaming and non-streaming responses from the MLX LM server.
+    Handle streaming and non-streaming responses from the MLX LM server, transforming them into a flattened UnifiedCompletionResponse.
 
     Args:
         response: The HTTP response from the server.
@@ -150,7 +166,7 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
         object_type: The type of response object ("chat.completion", "text.completion", or their chunk variants).
 
     Returns:
-        ChatCompletionResponse object or generator of ChatCompletionResponse objects for streaming.
+        UnifiedCompletionResponse object or generator of UnifiedCompletionResponse objects for streaming.
 
     Raises:
         HTTPException: If the response is invalid or the request fails.
@@ -168,6 +184,33 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
             status_code=500, detail=f"Server returned unexpected Content-Type: {content_type}")
 
     response.raise_for_status()
+
+    # Helper function to transform server response to unified response
+    def transform_to_unified(server_response: dict) -> UnifiedCompletionResponse:
+        # Extract content from the first choice (assuming single choice for simplicity)
+        choices = server_response.get("choices", [])
+        content = None
+        finish_reason = None
+        if choices:
+            choice = choices[0]
+            if choice.get("delta") and choice["delta"].get("content"):
+                content = choice["delta"]["content"]
+            elif choice.get("message") and choice["message"].get("content"):
+                content = choice["message"]["content"]
+            elif choice.get("text"):
+                content = choice["text"]
+            finish_reason = choice.get("finish_reason")
+
+        return UnifiedCompletionResponse(
+            id=server_response["id"],
+            object="completion.chunk" if is_stream else "completion",
+            created=server_response["created"],
+            model=server_response["model"],
+            content=content,
+            finish_reason=finish_reason,
+            usage=Usage(
+                **server_response["usage"]) if server_response.get("usage") else None
+        )
 
     # Handle streaming response
     if is_stream:
@@ -195,7 +238,8 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
                     for choice in chunk.get("choices", []):
                         if choice.get("logprobs") and choice["logprobs"].get("tokens") is None:
                             choice["logprobs"]["tokens"] = []
-                    yield ChatCompletionResponse(**chunk)
+                    server_response = ServerCompletionResponse(**chunk)
+                    yield transform_to_unified(server_response.dict())
                     # Check if any choice has a finish_reason, indicating completion
                     if any(choice.get("finish_reason") for choice in chunk.get("choices", [])):
                         logger.info(
@@ -223,7 +267,8 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
         for choice in response_json.get("choices", []):
             if choice.get("logprobs") and choice["logprobs"].get("tokens") is None:
                 choice["logprobs"]["tokens"] = []
-        return ChatCompletionResponse(**response_json)
+        server_response = ServerCompletionResponse(**response_json)
+        return transform_to_unified(server_response.dict())
     except requests.exceptions.JSONDecodeError as e:
         logger.error(
             f"JSON decode error: {str(e)}, Response content: {response_text}")
@@ -233,7 +278,7 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
 # API Calls
 
 
-def chat_completions(request: ChatCompletionRequest) -> Union[ChatCompletionResponse, Generator[ChatCompletionResponse, None, None]]:
+def chat_completions(request: ChatCompletionRequest) -> Union[UnifiedCompletionResponse, Generator[UnifiedCompletionResponse, None, None]]:
     """
     Send a chat completion request to the MLX LM server.
 
@@ -241,7 +286,7 @@ def chat_completions(request: ChatCompletionRequest) -> Union[ChatCompletionResp
         request: ChatCompletionRequest object containing the request parameters.
 
     Returns:
-        ChatCompletionResponse object or generator of ChatCompletionResponse objects for streaming.
+        UnifiedCompletionResponse object or generator of UnifiedCompletionResponse objects for streaming.
 
     Raises:
         HTTPException: If the request fails or the response is invalid.
@@ -258,7 +303,7 @@ def chat_completions(request: ChatCompletionRequest) -> Union[ChatCompletionResp
             stream=request.stream
         )
 
-        return _handle_response(response, is_stream=request.stream, object_type="chat.completion" if not request.stream else "chat.completion.chunk")
+        return _handle_response(response, is_stream=request.stream, object_type="chat.completion")
 
     except requests.exceptions.HTTPError as e:
         logger.error(
@@ -275,7 +320,7 @@ def chat_completions(request: ChatCompletionRequest) -> Union[ChatCompletionResp
             status_code=500, detail=f"Internal error: {str(e)}")
 
 
-def text_completions(request: TextCompletionRequest) -> Union[ChatCompletionResponse, Generator[ChatCompletionResponse, None, None]]:
+def text_completions(request: TextCompletionRequest) -> Union[UnifiedCompletionResponse, Generator[UnifiedCompletionResponse, None, None]]:
     """
     Send a text completion request to the MLX LM server.
 
@@ -283,7 +328,7 @@ def text_completions(request: TextCompletionRequest) -> Union[ChatCompletionResp
         request: TextCompletionRequest object containing the request parameters.
 
     Returns:
-        ChatCompletionResponse object or generator of ChatCompletionResponse objects for streaming.
+        UnifiedCompletionResponse object or generator of UnifiedCompletionResponse objects for streaming.
 
     Raises:
         HTTPException: If the request fails or the response is invalid.
@@ -300,7 +345,7 @@ def text_completions(request: TextCompletionRequest) -> Union[ChatCompletionResp
             stream=request.stream
         )
 
-        return _handle_response(response, is_stream=request.stream, object_type="text.completion" if not request.stream else "text.completion.chunk")
+        return _handle_response(response, is_stream=request.stream, object_type="text.completion")
 
     except requests.exceptions.HTTPError as e:
         logger.error(

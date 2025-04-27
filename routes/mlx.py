@@ -11,7 +11,8 @@ from helpers.mlx import (
     text_completions,
     list_models,
     ChatCompletionRequest,
-    TextCompletionRequest
+    TextCompletionRequest,
+    UnifiedCompletionResponse
 )
 import time
 from model_cache import MODEL_CACHE, MODEL_CACHE_LOCK
@@ -28,14 +29,11 @@ async def chat_endpoint(request: ChatCompletionRequest):
                 for chunk in response:  # Iterate over generator for streaming chunks
                     yield format_json({
                         "id": chunk.id,
-                        "object": "chat.completion.chunk",
+                        "object": "completion.chunk",
                         "created": chunk.created,
                         "model": chunk.model,
-                        "choices": [{
-                            "index": choice.index,
-                            "delta": choice.delta.dict() if choice.delta else None,
-                            "finish_reason": choice.finish_reason
-                        } for choice in chunk.choices]
+                        "content": chunk.content,
+                        "finish_reason": chunk.finish_reason
                     }) + "\n"
             return StreamingResponse(stream_response(), media_type="application/x-ndjson")
         return response
@@ -61,14 +59,11 @@ async def generate_endpoint(request: TextCompletionRequest):
                 for chunk in response:  # Iterate over generator for streaming chunks
                     yield format_json({
                         "id": chunk.id,
-                        "object": "text.completion.chunk",
+                        "object": "completion.chunk",
                         "created": chunk.created,
                         "model": chunk.model,
-                        "choices": [{
-                            "index": choice.index,
-                            "text": choice.text,
-                            "finish_reason": choice.finish_reason
-                        } for choice in chunk.choices]
+                        "content": chunk.content,
+                        "finish_reason": chunk.finish_reason
                     }) + "\n"
             return StreamingResponse(stream_response(), media_type="application/x-ndjson")
         return response

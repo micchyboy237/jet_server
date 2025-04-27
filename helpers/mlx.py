@@ -384,7 +384,6 @@ def list_models() -> ModelsResponse:
             headers={"Content-Type": "application/json"}
         )
         logger.info(f"Response status code: {response.status_code}")
-        logger.info(f"Response content: {response.text}")
 
         content_type = response.headers.get("Content-Type", "")
         if "application/json" not in content_type:
@@ -393,7 +392,9 @@ def list_models() -> ModelsResponse:
                 status_code=500, detail=f"Server returned non-JSON response: Content-Type {content_type}")
 
         response.raise_for_status()
-        return ModelsResponse(**response.json())
+        structured_response = ModelsResponse(**response.json())
+        logger.success(format_json(structured_response.model_dump()))
+        return structured_response
 
     except requests.exceptions.HTTPError as e:
         logger.error(

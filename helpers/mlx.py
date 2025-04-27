@@ -1,5 +1,6 @@
 import json
 import time
+from jet.transformers.formatters import format_json
 import requests
 from typing import List, Dict, Optional, Union, Literal, Generator
 from pydantic import BaseModel, Field
@@ -241,6 +242,7 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
                     yield unified_response
                     # Check if any choice has a finish_reason, indicating completion
                     if any(choice.get("finish_reason") for choice in chunk.get("choices", [])):
+                        logger.newline()
                         logger.info(
                             "Finish reason detected in chunk, stopping stream")
                         return
@@ -293,7 +295,9 @@ def chat_completions(request: ChatCompletionRequest) -> Union[UnifiedCompletionR
     try:
         request_payload = request.dict(exclude_none=True)
         logger.info(
-            f"Sending request to {BASE_URL}/chat/completions: {request_payload}")
+            f"Sending request to {BASE_URL}/chat/completions...")
+        logger.gray("Request payload:")
+        logger.debug(format_json(request_payload))
 
         response = requests.post(
             f"{BASE_URL}/chat/completions",
@@ -335,7 +339,9 @@ def text_completions(request: TextCompletionRequest) -> Union[UnifiedCompletionR
     try:
         request_payload = request.dict(exclude_none=True)
         logger.info(
-            f"Sending request to {BASE_URL}/completions: {request_payload}")
+            f"Sending request to {BASE_URL}/completions...")
+        logger.gray("Request payload:")
+        logger.debug(format_json(request_payload))
 
         response = requests.post(
             f"{BASE_URL}/completions",

@@ -255,7 +255,6 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
 
     # Handle non-streaming response
     response_text = response.text
-    logger.info(f"Response content: {response_text}")
 
     if not response_text.strip():
         logger.error("Empty response received from the server")
@@ -269,7 +268,9 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
             if choice.get("logprobs") and choice["logprobs"].get("tokens") is None:
                 choice["logprobs"]["tokens"] = []
         server_response = ServerCompletionResponse(**response_json)
-        return transform_to_unified(server_response.dict())
+        unified_response = transform_to_unified(server_response.dict())
+        logger.success(unified_response.content)
+        return unified_response
     except requests.exceptions.JSONDecodeError as e:
         logger.error(
             f"JSON decode error: {str(e)}, Response content: {response_text}")

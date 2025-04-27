@@ -30,7 +30,6 @@ async def chat_endpoint(request: ChatCompletionRequest):
                     yield format_json({
                         "id": chunk.id,
                         "created": chunk.created,
-                        "model": chunk.model,
                         "content": chunk.content,
                         "finish_reason": chunk.finish_reason
                     }) + "\n"
@@ -59,7 +58,6 @@ async def generate_endpoint(request: TextCompletionRequest):
                     yield format_json({
                         "id": chunk.id,
                         "created": chunk.created,
-                        "model": chunk.model,
                         "content": chunk.content,
                         "finish_reason": chunk.finish_reason
                     }) + "\n"

@@ -98,7 +98,6 @@ class UnifiedCompletionResponse(BaseModel):
     id: str = Field(..., description="Unique identifier for the completion")
     created: int = Field(...,
                          description="Timestamp for when the request was processed")
-    model: str = Field(..., description="Model repo or path")
     content: Optional[str] = Field(
         None, description="Generated content (text or message)")
     finish_reason: Optional[Literal["stop", "length"]] = Field(
@@ -146,7 +145,6 @@ class ServerCompletionResponse(BaseModel):
                                     description="Unique identifier for the system")
     object: Literal["chat.completion", "chat.completion.chunk", "text.completion",
                     "text.completion.chunk", "text_completion"] = Field(..., description="Type of response")
-    model: str = Field(..., description="Model repo or path")
     created: int = Field(...,
                          description="Timestamp for when the request was processed")
     choices: List[Choice] = Field(..., description="List of output choices")
@@ -203,7 +201,6 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
         return UnifiedCompletionResponse(
             id=server_response["id"],
             created=server_response["created"],
-            model=server_response["model"],
             content=content,
             finish_reason=finish_reason,
             usage=Usage(

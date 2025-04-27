@@ -33,7 +33,7 @@ async def chat_endpoint(request: ChatCompletionRequest):
                         "model": chunk.model,
                         "choices": [{
                             "index": choice.index,
-                            "message": choice.message.dict() if choice.message else None,
+                            "delta": choice.delta.dict() if choice.delta else None,
                             "finish_reason": choice.finish_reason
                         } for choice in chunk.choices]
                     }) + "\n"
@@ -42,7 +42,7 @@ async def chat_endpoint(request: ChatCompletionRequest):
     except requests.exceptions.HTTPError as e:
         logger.error(f"HTTP error from MLX server: {str(e)}")
         raise HTTPException(
-            status_code=500, detail=f"MLX server error: {str(e)}")
+            status_code=500, detail=f"MLX LM server error: {str(e)}")
     except requests.exceptions.RequestException as e:
         logger.error(f"Network error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Network error: {str(e)}")

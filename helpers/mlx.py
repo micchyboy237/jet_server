@@ -17,6 +17,13 @@ class Message(BaseModel):
     content: str = Field(..., description="Content of the message")
 
 
+class Delta(BaseModel):
+    role: Optional[str] = Field(
+        None, description="Role of the message sender in streaming delta")
+    content: Optional[str] = Field(
+        None, description="Content of the message in streaming delta")
+
+
 class ChatCompletionRequest(BaseModel):
     messages: List[Message] = Field(
         ..., description="Array of message objects representing conversation history")
@@ -81,8 +88,8 @@ class TextCompletionRequest(BaseModel):
 class Usage(BaseModel):
     prompt_tokens: int = Field(...,
                                description="Number of prompt tokens processed")
-    completion_templates: int = Field(...,
-                                      description="Number of tokens generated")
+    completion_tokens: int = Field(...,
+                                   description="Number of tokens generated")
     total_tokens: int = Field(..., description="Total number of tokens")
 
 
@@ -98,9 +105,11 @@ class LogProbs(BaseModel):
 class Choice(BaseModel):
     index: int = Field(..., description="Index of the choice in the list")
     message: Optional[Message] = Field(
-        None, description="Text response from the model")
+        None, description="Text response from the model for non-streaming chat completions")
     text: Optional[str] = Field(
         None, description="Generated text for text completion")
+    delta: Optional[Delta] = Field(
+        None, description="Delta response for streaming chat completions")
     logprobs: Optional[LogProbs] = Field(
         None, description="Log probabilities for generated tokens")
     finish_reason: Optional[Literal["stop", "length"]] = Field(
@@ -187,6 +196,11 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
                         if choice.get("logprobs") and choice["logprobs"].get("tokens") is None:
                             choice["logprobs"]["tokens"] = []
                     yield ChatCompletionResponse(**chunk)
+                    # Check if any choice has a finish_reason, indicating completion
+                    if any(choice.get("finish_reason") for choice in chunk.get("choices", [])):
+                        logger.info(
+                            "Finish reason detected in chunk, stopping stream")
+                        return
                 except json.JSONDecodeError as e:
                     logger.error(
                         f"Failed to parse chunk JSON: {e}, chunk: {json_data}")

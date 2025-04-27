@@ -29,7 +29,6 @@ async def chat_endpoint(request: ChatCompletionRequest):
                 for chunk in response:  # Iterate over generator for streaming chunks
                     yield format_json({
                         "id": chunk.id,
-                        "object": "completion.chunk",
                         "created": chunk.created,
                         "model": chunk.model,
                         "content": chunk.content,
@@ -59,7 +58,6 @@ async def generate_endpoint(request: TextCompletionRequest):
                 for chunk in response:  # Iterate over generator for streaming chunks
                     yield format_json({
                         "id": chunk.id,
-                        "object": "completion.chunk",
                         "created": chunk.created,
                         "model": chunk.model,
                         "content": chunk.content,

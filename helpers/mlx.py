@@ -95,8 +95,6 @@ class Usage(BaseModel):
 
 class UnifiedCompletionResponse(BaseModel):
     id: str = Field(..., description="Unique identifier for the completion")
-    object: Literal["completion",
-                    "completion.chunk"] = Field(..., description="Type of response")
     created: int = Field(...,
                          description="Timestamp for when the request was processed")
     model: str = Field(..., description="Model repo or path")
@@ -203,7 +201,6 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
 
         return UnifiedCompletionResponse(
             id=server_response["id"],
-            object="completion.chunk" if is_stream else "completion",
             created=server_response["created"],
             model=server_response["model"],
             content=content,
@@ -218,7 +215,6 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
             for line in response.iter_lines(decode_unicode=True):
                 if not line.strip():
                     continue
-                logger.info(f"Stream chunk: {line}")
 
                 # Parse SSE format (expecting "data: {...}")
                 if not line.startswith("data: "):
@@ -239,7 +235,10 @@ def _handle_response(response: requests.Response, is_stream: bool, object_type: 
                         if choice.get("logprobs") and choice["logprobs"].get("tokens") is None:
                             choice["logprobs"]["tokens"] = []
                     server_response = ServerCompletionResponse(**chunk)
-                    yield transform_to_unified(server_response.dict())
+                    unified_response = transform_to_unified(
+                        server_response.dict())
+                    logger.success(unified_response.content, flush=True)
+                    yield unified_response
                     # Check if any choice has a finish_reason, indicating completion
                     if any(choice.get("finish_reason") for choice in chunk.get("choices", [])):
                         logger.info(

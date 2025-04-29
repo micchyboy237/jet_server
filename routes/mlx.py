@@ -6,7 +6,7 @@ from typing import List, Optional, Dict, Any
 import requests
 from jet.transformers.formatters import format_json
 from jet.logger import logger
-from helpers.mlx import (
+from jet.llm.mlx.generation import (
     chat_completions,
     text_completions,
     list_models,

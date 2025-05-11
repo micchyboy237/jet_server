@@ -3,7 +3,8 @@
 export PYTHONPATH="$PYTHONPATH:$PWD"
 
 JET_SERVER_DIR="/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server"
-MLX_SERVER_DIR="/Users/jethroestrada/Desktop/External_Projects/AI/repo-libs/mlx-lm/mlx_lm"
+# MLX_SERVER_DIR="/Users/jethroestrada/Desktop/External_Projects/AI/repo-libs/mlx-lm/mlx_lm"
+MLX_SERVER_DIR="/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/llm/mlx/server"
 
 # Function to clean up all processes
 cleanup() {
@@ -22,7 +23,7 @@ trap cleanup SIGINT
 echo "[INFO] Starting MLX server in a new Terminal window..."
 osascript -e 'tell application "Terminal" to do script "
   cd \"'"$MLX_SERVER_DIR"'\"
-  python -m mlx_lm server --model \"mlx-community/Llama-3.2-3B-Instruct-4bit\" --port 8003
+  ./start.sh
   echo \"[INFO] MLX server stopped.\"
   exit"'
 

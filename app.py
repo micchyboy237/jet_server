@@ -75,10 +75,20 @@ async def shutdown_event():
 
 if __name__ == "__main__":
     import uvicorn
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Run the FastAPI server with custom host and port.")
+    parser.add_argument("--host", type=str, default="0.0.0.0",
+                        help="Host to run the server on")
+    parser.add_argument("--port", type=int, default=8002,
+                        help="Port to run the server on")
+    args = parser.parse_args()
+
     uvicorn.run(
         "app:app",
-        host="0.0.0.0",
-        port=8002,
+        host=args.host,
+        port=args.port,
         reload=True,
         reload_dirs=[
             "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules"

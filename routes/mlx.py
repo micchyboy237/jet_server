@@ -19,8 +19,6 @@ from model_cache import MODEL_CACHE, MODEL_CACHE_LOCK
 
 router = APIRouter()
 
-# Pydantic models for /models endpoint response
-
 
 class ModelInfo(BaseModel):
     id: str
@@ -40,7 +38,7 @@ async def chat_endpoint(request: ChatCompletionRequest) -> UnifiedCompletionResp
         response = chat(request)
         if request.stream:
             def stream_response():
-                for chunk in response:  # Iterate over generator for streaming chunks
+                for chunk in response:
                     response_dict = {
                         'id': chunk.id,
                         'created': chunk.created,
@@ -75,7 +73,7 @@ async def generate_endpoint(request: TextCompletionRequest) -> UnifiedCompletion
         response = generate(request)
         if request.stream:
             def stream_response():
-                for chunk in response:  # Iterate over generator for streaming chunks
+                for chunk in response:
                     response_dict = {
                         'id': chunk.id,
                         'created': chunk.created,

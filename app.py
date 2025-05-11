@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI, Request, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from jet.llm.mlx.model_cache import cleanup_idle_models
 from routes.rerankers.heuristic import router as reranker_heuristic_router
 from routes.rerankers.semantic import router as reranker_semantic_router
 from routes.rag import router as rag_router
@@ -13,7 +14,6 @@ from routes.job.cover_letter import router as cover_letter_router
 from routes.eval.faithfulness import router as faithfulness_router
 from routes.evaluation import router as evaluation_router
 from routes.mlx import router as mlx_router
-from model_cache import cleanup_idle_models
 from middlewares import log_exceptions_middleware
 from jet.llm.ollama.base import initialize_ollama_settings
 from jet.logger import logger

@@ -1,3 +1,4 @@
+# jet_server/routes/mlx.py
 import json
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
@@ -15,7 +16,6 @@ from jet.llm.mlx.generation import (
     UnifiedCompletionResponse
 )
 import time
-from model_cache import MODEL_CACHE, MODEL_CACHE_LOCK
 
 router = APIRouter()
 
@@ -105,15 +105,7 @@ async def generate_endpoint(request: TextCompletionRequest) -> UnifiedCompletion
 @router.get("/models")
 async def models_endpoint() -> ModelListResponse:
     try:
-        async with MODEL_CACHE_LOCK:
-            if "models" in MODEL_CACHE:
-                logger.info("Returning cached model list")
-                return ModelListResponse(**MODEL_CACHE["models"])
-        response = list_models()
-        model_list = ModelListResponse(**response.dict())
-        async with MODEL_CACHE_LOCK:
-            MODEL_CACHE["models"] = model_list.dict()
-        return model_list
+        return list_models()  # Changed back to synchronous call
     except requests.exceptions.HTTPError as e:
         error_detail = e.response.text if e.response else str(e)
         logger.error(f"HTTP error from MLX server: {error_detail}")

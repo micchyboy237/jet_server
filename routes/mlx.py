@@ -55,10 +55,11 @@ async def chat_endpoint(request: ChatCompletionRequest) -> UnifiedCompletionResp
             return StreamingResponse(stream_response(), media_type="application/json")
         return response
     except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTP error from MLX server: {str(e)}")
+        error_detail = e.response.text if e.response else str(e)
+        logger.error(f"HTTP error from MLX server: {error_detail}")
         raise HTTPException(
             status_code=e.response.status_code if e.response else 500,
-            detail=f"MLX LM server error: {str(e)}")
+            detail=f"MLX LM server error: {error_detail}")
     except requests.exceptions.RequestException as e:
         logger.error(f"Network error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Network error: {str(e)}")
@@ -89,10 +90,11 @@ async def generate_endpoint(request: TextCompletionRequest) -> UnifiedCompletion
             return StreamingResponse(stream_response(), media_type="application/json")
         return response
     except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTP error from MLX server: {str(e)}")
+        error_detail = e.response.text if e.response else str(e)
+        logger.error(f"HTTP error from MLX server: {error_detail}")
         raise HTTPException(
             status_code=e.response.status_code if e.response else 500,
-            detail=f"MLX LM server error: {str(e)}")
+            detail=f"MLX LM server error: {error_detail}")
     except requests.exceptions.RequestException as e:
         logger.error(f"Network error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Network error: {str(e)}")
@@ -115,10 +117,11 @@ async def models_endpoint() -> ModelListResponse:
             MODEL_CACHE["models"] = model_list.dict()
         return model_list
     except requests.exceptions.HTTPError as e:
-        logger.error(f"HTTP error from MLX server: {str(e)}")
+        error_detail = e.response.text if e.response else str(e)
+        logger.error(f"HTTP error from MLX server: {error_detail}")
         raise HTTPException(
             status_code=e.response.status_code if e.response else 500,
-            detail=f"MLX LM server error: {str(e)}")
+            detail=f"MLX LM server error: {error_detail}")
     except requests.exceptions.RequestException as e:
         logger.error(f"Network error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Network error: {str(e)}")

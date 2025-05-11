@@ -18,12 +18,33 @@ from middlewares import log_exceptions_middleware
 from jet.llm.ollama.base import initialize_ollama_settings
 from jet.logger import logger
 from starlette.middleware.base import BaseHTTPMiddleware
+from contextlib import asynccontextmanager
 import asyncio
+import argparse
 
 initialize_ollama_settings()
 os.environ["TOKENIZERS_PARALLELISM"] = "true"
 
-app = FastAPI()
+# Define lifespan handler
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    logger.info("Starting cleanup_idle_models task")
+    cleanup_task = asyncio.create_task(cleanup_idle_models())
+
+    yield  # Application runs here
+
+    # Shutdown logic
+    logger.info("Shutting down, cancelling cleanup_idle_models task")
+    tasks = [task for task in asyncio.all_tasks(
+    ) if task is not asyncio.current_task()]
+    for task in tasks:
+        task.cancel()
+
+# Initialize FastAPI with lifespan
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,12 +60,6 @@ app.middleware("http")(log_exceptions_middleware)
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
-
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("Starting cleanup_idle_models task")
-    asyncio.create_task(cleanup_idle_models())
 
 app.include_router(rag_router, prefix="/api/v1/rag", tags=["rag"])
 app.include_router(reranker_heuristic_router,
@@ -64,19 +79,7 @@ app.include_router(faithfulness_router,
 app.include_router(mlx_router,
                    prefix="/api/v1/mlx", tags=["mlx"])
 
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    logger.info("Shutting down, cancelling cleanup_idle_models task")
-    tasks = [task for task in asyncio.all_tasks(
-    ) if task is not asyncio.current_task()]
-    for task in tasks:
-        task.cancel()
-
 if __name__ == "__main__":
-    import uvicorn
-    import argparse
-
     parser = argparse.ArgumentParser(
         description="Run the FastAPI server with custom host and port.")
     parser.add_argument("--host", type=str, default="0.0.0.0",
@@ -85,6 +88,7 @@ if __name__ == "__main__":
                         help="Port to run the server on")
     args = parser.parse_args()
 
+    import uvicorn
     uvicorn.run(
         "app:app",
         host=args.host,

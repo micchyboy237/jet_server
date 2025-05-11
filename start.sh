@@ -3,7 +3,6 @@
 export PYTHONPATH="$PYTHONPATH:$PWD"
 
 JET_SERVER_DIR="/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server"
-# MLX_SERVER_DIR="/Users/jethroestrada/Desktop/External_Projects/AI/repo-libs/mlx-lm/mlx_lm"
 MLX_SERVER_DIR="/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/llm/mlx/server"
 
 # Function to clean up all processes
@@ -20,12 +19,17 @@ cleanup() {
 # Trap Ctrl+C and call cleanup
 trap cleanup SIGINT
 
-echo "[INFO] Starting MLX server in a new Terminal window..."
-osascript -e 'tell application "Terminal" to do script "
-  cd \"'"$MLX_SERVER_DIR"'\"
-  ./start.sh
-  echo \"[INFO] MLX server stopped.\"
-  exit"'
+# Check if port 9000 is in use
+if ! lsof -i :9000 >/dev/null; then
+  echo "[INFO] Port 9000 is free. Starting MLX server in a new Terminal window..."
+  osascript -e 'tell application "Terminal" to do script "
+    cd \"'"$MLX_SERVER_DIR"'\"
+    ./start.sh
+    echo \"[INFO] MLX server stopped.\"
+    exit"'
+else
+  echo "[INFO] Port 9000 is already in use. Skipping MLX server startup."
+fi
 
 echo "[INFO] Starting Python server in current terminal..."
 python app.py &

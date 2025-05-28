@@ -52,7 +52,7 @@ else
 fi
 
 # 1. Text Completion Request
-echo "\n\n[INFO] Sending Text Completion Request..."
+echo "\n\n[INFO] Step 1: Sending Text Completion Request..."
 curl -X POST http://127.0.0.1:8003/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -63,7 +63,7 @@ curl -X POST http://127.0.0.1:8003/v1/completions \
   }'
 
 # 2. Chat Completion Request (Non-Streaming)
-echo "\n\n[INFO] Sending Chat Completion Request (Non-Streaming)..."
+echo "\n\n[INFO] Step 2: Sending Chat Completion Request (Non-Streaming)..."
 curl -X POST http://127.0.0.1:8003/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -77,7 +77,7 @@ curl -X POST http://127.0.0.1:8003/v1/chat/completions \
   }'
 
 # 3. Chat Completion with Streaming
-echo "\n\n[INFO] Sending Chat Completion Request with Streaming..."
+echo "\n\n[INFO] Step 3: Sending Chat Completion Request with Streaming..."
 curl -X POST http://127.0.0.1:8003/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -91,15 +91,15 @@ curl -X POST http://127.0.0.1:8003/v1/chat/completions \
   }'
 
 # 4. List Available Models
-echo "\n\n[INFO] Sending Request to List Available Models..."
+echo "\n\n[INFO] Step 4: Sending Request to List Available Models..."
 curl -X GET http://127.0.0.1:8003/v1/models
 
 # 5. Health Check
-echo "\n\n[INFO] Sending Health Check Request..."
+echo "\n\n[INFO] Step 5: Sending Health Check Request..."
 curl -X GET http://127.0.0.1:8003/health
 
 # 6. Chat Completion with Stop Words and Logit Bias
-echo "\n\n[INFO] Sending Chat Completion Request with Stop Words and Logit Bias..."
+echo "\n\n[INFO] Step 6: Sending Chat Completion Request with Stop Words and Logit Bias..."
 curl -X POST http://127.0.0.1:8003/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -113,7 +113,7 @@ curl -X POST http://127.0.0.1:8003/v1/chat/completions \
   }'
 
 # 7. Using a Custom Model and Adapter
-echo "\n\n[INFO] Sending Chat Completion Request using Custom Model and Adapter..."
+echo "\n\n[INFO] Step 7: Sending Chat Completion Request using Custom Model and Adapter..."
 curl -X POST http://127.0.0.1:8003/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{

@@ -5,11 +5,11 @@ MLX_SERVER_DIR="/Users/jethroestrada/Desktop/External_Projects/AI/repo-libs/mlx-
 
 # Function to check if the server is running
 check_server_running() {
-  if curl -s http://127.0.0.1:8003/health | grep -q '"status": "ok"'; then
-    echo "[INFO] MLX server is already running on port 8003."
+  if curl -s http://127.0.0.1:8004/health | grep -q '"status": "ok"'; then
+    echo "[INFO] MLX server is already running on port 8004."
     return 0
   else
-    echo "[INFO] No MLX server detected on port 8003."
+    echo "[INFO] No MLX server detected on port 8004."
     return 1
   fi
 }
@@ -18,8 +18,8 @@ check_server_running() {
 wait_for_server() {
   local max_attempts=30
   local attempt=1
-  echo "[INFO] Waiting for MLX server to start on port 8003..."
-  while ! curl -s http://127.0.0.1:8003/health | grep -q '"status": "ok"'; do
+  echo "[INFO] Waiting for MLX server to start on port 8004..."
+  while ! curl -s http://127.0.0.1:8004/health | grep -q '"status": "ok"'; do
     if [ $attempt -ge $max_attempts ]; then
       echo "[ERROR] MLX server failed to start after $max_attempts attempts."
       exit 1
@@ -42,7 +42,7 @@ if ! check_server_running; then
   echo "[INFO] Starting MLX server in a new Terminal window..."
   osascript -e 'tell application "Terminal" to do script "
     cd \"'"$MLX_SERVER_DIR"'\"
-    python -m mlx_lm server --model \"mlx-community/Llama-3.2-3B-Instruct-4bit\" --port 8003
+    python -m mlx_lm server --model \"mlx-community/Llama-3.2-3B-Instruct-4bit\" --port 8004
     echo \"[INFO] MLX server stopped.\"
     exit"'
   # Wait for the server to be ready
@@ -53,7 +53,7 @@ fi
 
 # 1. Text Completion Request
 echo "\n\n[INFO] Step 1: Sending Text Completion Request..."
-curl -X POST http://127.0.0.1:8003/v1/completions \
+curl -X POST http://127.0.0.1:8004/v1/completions \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Once upon a time",
@@ -64,7 +64,7 @@ curl -X POST http://127.0.0.1:8003/v1/completions \
 
 # 2. Chat Completion Request (Non-Streaming)
 echo "\n\n[INFO] Step 2: Sending Chat Completion Request (Non-Streaming)..."
-curl -X POST http://127.0.0.1:8003/v1/chat/completions \
+curl -X POST http://127.0.0.1:8004/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [
@@ -78,7 +78,7 @@ curl -X POST http://127.0.0.1:8003/v1/chat/completions \
 
 # 3. Chat Completion with Streaming
 echo "\n\n[INFO] Step 3: Sending Chat Completion Request with Streaming..."
-curl -X POST http://127.0.0.1:8003/v1/chat/completions \
+curl -X POST http://127.0.0.1:8004/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [
@@ -92,15 +92,15 @@ curl -X POST http://127.0.0.1:8003/v1/chat/completions \
 
 # 4. List Available Models
 echo "\n\n[INFO] Step 4: Sending Request to List Available Models..."
-curl -X GET http://127.0.0.1:8003/v1/models
+curl -X GET http://127.0.0.1:8004/v1/models
 
 # 5. Health Check
 echo "\n\n[INFO] Step 5: Sending Health Check Request..."
-curl -X GET http://127.0.0.1:8003/health
+curl -X GET http://127.0.0.1:8004/health
 
 # 6. Chat Completion with Stop Words and Logit Bias
 echo "\n\n[INFO] Step 6: Sending Chat Completion Request with Stop Words and Logit Bias..."
-curl -X POST http://127.0.0.1:8003/v1/chat/completions \
+curl -X POST http://127.0.0.1:8004/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [
@@ -114,7 +114,7 @@ curl -X POST http://127.0.0.1:8003/v1/chat/completions \
 
 # 7. Using a Custom Model and Adapter
 echo "\n\n[INFO] Step 7: Sending Chat Completion Request using Custom Model and Adapter..."
-curl -X POST http://127.0.0.1:8003/v1/chat/completions \
+curl -X POST http://127.0.0.1:8004/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "mlx-community/Llama-3.2-3B-Instruct-4bit",

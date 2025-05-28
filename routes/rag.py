@@ -16,7 +16,7 @@ from jet.transformers.formatters import format_json
 from pydantic import BaseModel
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import StreamingResponse
-from jet.vectors import get_source_node_attributes
+from jet.vectors.utils import get_source_node_attributes
 from jet.logger import logger
 
 from helpers.rag import RAG

@@ -1,13 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from jet.file.utils import load_file
-from jet.search.similarity import get_bm25_similarities
 from jet.search.formatters import clean_string
 from pydantic import BaseModel
 from typing import List
 from jet.wordnet.words import get_words
 from shared.data_types.job import JobData
 from sentence_transformers import SentenceTransformer, CrossEncoder, util
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from jet.file.utils import load_file
 from jet.vectors.helpers import (
     prepare_sentences,

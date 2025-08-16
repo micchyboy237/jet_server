@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from jet.data.utils import generate_unique_hash
 from jet.file.utils import load_file
-from jet.search.similarity import get_bm25_similarities, get_bm25_similarities_old
 from jet.search.formatters import clean_string
 from typing import List, Dict, Any, Optional, TypedDict
 from jet.utils.object import extract_values_by_paths
+from jet.vectors.reranker.bm25 import get_bm25_similarities_old
 from jet.wordnet.n_grams import get_most_common_ngrams
 from shared.data_types.job import JobData
 from jet.cache.cache_manager import CacheManager

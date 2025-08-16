@@ -29,7 +29,10 @@ exclude_files = [
     "jupyter",
     ".*",
     "_*",
+    # "generated",
     # Custom
+    "*response*",
+    # "*.sh",
 ]
 include_files = [
     # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/test/_temp_test.py",
@@ -62,10 +65,11 @@ SHORTEN_FUNCTS = False
 INCLUDE_FILE_STRUCTURE = False
 
 DEFAULT_QUERY_MESSAGE = """
-Update rerun_pending to rerun the appropriate task ID with the same args. Make sure it updates the responses as well in index.html (for stream or non-stream).
+Write unit tests separated by test files given these textblob package documentation
 """.strip()
 
 DEFAULT_SYSTEM_MESSAGE = """
+Dont use prior artifact knowledge and memory.
 """.strip()
 
 DEFAULT_INSTRUCTIONS_MESSAGE = """
@@ -74,7 +78,7 @@ DEFAULT_INSTRUCTIONS_MESSAGE = """
 # For existing projects
 # DEFAULT_INSTRUCTIONS_MESSAGE += (
 #     "\n- Only respond with parts of the code that have been added or updated to keep it short and concise."
-# )
+# )z
 
 # For creating projects
 # DEFAULT_INSTRUCTIONS_MESSAGE += (
@@ -197,7 +201,7 @@ def main():
             cleaned_rel_path = remove_parent_paths(rel_path)
 
             prefix = (
-                f"\n// {cleaned_rel_path}\n" if not filenames_only else f"{file}\n")
+                f"\n# {cleaned_rel_path}\n" if not filenames_only else f"{file}\n")
             if filenames_only:
                 clipboard_content += f"{prefix}"
             else:
@@ -239,12 +243,12 @@ def main():
     clipboard_content_parts = []
 
     if system_message:
-        clipboard_content_parts.append(f"SYSTEM\n{system_message}")
+        clipboard_content_parts.append(f"System\n{system_message}")
     if instructions_message:
-        clipboard_content_parts.append(f"INSTRUCTIONS\n{instructions_message}")
-    clipboard_content_parts.append(f"QUERY\n{query_message}")
+        clipboard_content_parts.append(f"Instructions\n{instructions_message}")
+    clipboard_content_parts.append(f"Query\n{query_message}")
     if INCLUDE_FILE_STRUCTURE:
-        clipboard_content_parts.append(f"FILES STRUCTURE\n{files_structure}")
+        clipboard_content_parts.append(f"Files Structure\n{files_structure}")
 
     if clipboard_content:
         clipboard_content_parts.append(

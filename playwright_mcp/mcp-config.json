@@ -1,0 +1,26 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "isolated": true,
+    "launchOptions": {
+      "headless": false
+    },
+    "contextOptions": {
+      "viewport": { "width": 1280, "height": 720 }
+    }
+  },
+  "server": {
+    "port": 3000,
+    "host": "localhost"
+  },
+  "capabilities": ["tabs", "pdf"],
+  "outputDir": "./mcp-output",
+  "network": {
+    "allowedOrigins": [
+      "https://the-internet.herokuapp.com",
+      "https://practiceautomatedtesting.com"
+    ],
+    "blockedOrigins": []
+  },
+  "imageResponses": "omit"
+}

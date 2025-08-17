@@ -1,80 +1,157 @@
+from typing import Dict, Any
 import pytest
-import asyncio
-from datetime import timedelta
-from typing import List
-from mcp.client.streamable_http import streamablehttp_client
-from mcp import ClientSession
+import json
+import subprocess
+import requests
+import time
 
 
-@pytest.fixture(scope="module")
-def event_loop():
-    """Create an event loop for async tests."""
-    loop = asyncio.get_event_loop()
-    yield loop
-    loop.close()
+class TestPlaywrightMCP:
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Start the MCP server before tests."""
+        self.server_process = subprocess.Popen(
+            ["npx", "@playwright/mcp@latest", "--port=8931"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        # Wait briefly to ensure the server is up
+        time.sleep(2)
+        yield
+        self.server_process.terminate()
 
+    def test_navigate_and_screenshot(self):
+        """Test navigation and screenshot tools."""
+        # Given: A running MCP server and a test URL
+        url = "https://example.com"
+        screenshot_name = "test_screenshot.png"
+        expected_response = {"status": "success"}
 
-@pytest.fixture(scope="module")
-async def mcp_session():
-    """Set up an MCP session for testing."""
-    server_url = "http://127.0.0.1:8000/mcp/"
-    async with streamablehttp_client(url=server_url, timeout=100, sse_read_timeout=300) as (
-        read_stream,
-        write_stream,
-        _,
-    ):
-        async with ClientSession(
-            read_stream=read_stream,
-            write_stream=write_stream,
-            read_timeout_seconds=timedelta(seconds=100),
-        ) as session:
-            yield session
+        # When: Sending navigate and screenshot commands
+        navigate_command = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": {
+                "name": "playwright_navigate",
+                "arguments": {"url": url}
+            }
+        }
+        screenshot_command = {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "method": "tools/call",
+            "params": {
+                "name": "playwright_screenshot",
+                "arguments": {"name": screenshot_name}
+            }
+        }
 
+        # Then: Verify the responses
+        result_navigate = self._send_command(navigate_command)
+        result_screenshot = self._send_command(screenshot_command)
 
-@pytest.mark.asyncio
-async def test_initialize_session(mcp_session: ClientSession):
-    """Test session initialization."""
-    # Given: An MCP session
-    session = mcp_session
-    expected_protocol_version = "1.0"  # Adjust based on your server
+        assert result_navigate == expected_response, "Navigation failed"
+        assert result_screenshot == expected_response, "Screenshot failed"
 
-    # When: Initializing the session
-    result = await session.initialize()
+    def test_fill_and_click(self):
+        """Test form filling and clicking tools."""
+        # Given: A running MCP server and a test login page
+        url = "https://example.com/login"
+        username_selector = "#username"
+        password_selector = "#password"
+        login_button = "#loginButton"
+        username = "testuser"
+        password = "testpass"
+        expected_response = {"status": "success"}
 
-    # Then: The session initializes with the expected protocol version
-    assert result.protocolVersion == expected_protocol_version, f"Expected protocol version {expected_protocol_version}, got {result.protocolVersion}"
+        # When: Sending navigate, fill, and click commands
+        navigate_command = {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+                "name": "playwright_navigate",
+                "arguments": {"url": url}
+            }
+        }
+        fill_username_command = {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "tools/call",
+            "params": {
+                "name": "playwright_fill",
+                "arguments": {"selector": username_selector, "value": username}
+            }
+        }
+        fill_password_command = {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "method": "tools/call",
+            "params": {
+                "name": "playwright_fill",
+                "arguments": {"selector": password_selector, "value": password}
+            }
+        }
+        click_command = {
+            "jsonrpc": "2.0",
+            "id": 6,
+            "method": "tools/call",
+            "params": {
+                "name": "playwright_click",
+                "arguments": {"selector": login_button}
+            }
+        }
 
+        # Then: Verify the responses
+        result_navigate = self._send_command(navigate_command)
+        result_fill_username = self._send_command(fill_username_command)
+        result_fill_password = self._send_command(fill_password_command)
+        result_click = self._send_command(click_command)
 
-@pytest.mark.asyncio
-async def test_list_tools(mcp_session: ClientSession):
-    """Test listing available tools."""
-    # Given: An initialized MCP session
-    session = mcp_session
-    expected_tools = ["add"]  # Adjust based on your server's tools
+        assert result_navigate == expected_response, "Navigation failed"
+        assert result_fill_username == expected_response, "Username fill failed"
+        assert result_fill_password == expected_response, "Password fill failed"
+        assert result_click == expected_response, "Click failed"
 
-    # When: Listing available tools
-    tools_result = await session.list_tools()
-    result = [tool.name for tool in tools_result.tools]
+    def test_api_post(self):
+        """Test API POST request tool."""
+        # Given: A running MCP server and a test API endpoint
+        api_url = "https://api.example.com/login"
+        request_body = {"username": "testuser", "password": "testpass"}
+        headers = {"Content-Type": "application/json"}
+        expected_response = {"status": "success"}
 
-    # Then: The tool list contains expected tools
-    assert result == expected_tools, f"Expected tools {expected_tools}, got {result}"
+        # When: Sending an API POST command
+        post_command = {
+            "jsonrpc": "2.0",
+            "id": 7,
+            "method": "tools/call",
+            "params": {
+                "name": "api_post",
+                "arguments": {
+                    "url": api_url,
+                    "body": request_body,
+                    "headers": headers
+                }
+            }
+        }
 
+        # Then: Verify the response
+        result_post = self._send_command(post_command)
 
-@pytest.mark.asyncio
-async def test_call_tool(mcp_session: ClientSession):
-    """Test calling the 'add' tool."""
-    # Given: An initialized MCP session and tool parameters
-    session = mcp_session
-    tool_name = "add"
-    tool_args = {"x": 2, "y": 3}
-    expected_result = "5"  # Expected output of add(2, 3)
+        assert result_post == expected_response, "API POST failed"
 
-    # When: Calling the 'add' tool
-    call_result = await session.call_tool(tool_name, tool_args)
-    try:
-        result = call_result.content[0].text
-    except AttributeError:
-        result = call_result.structuredContent.get("result", "Unknown")
-
-    # Then: The tool returns the expected result
-    assert result == expected_result, f"Expected result {expected_result}, got {result}"
+    def _send_command(self, command: Dict[str, Any]) -> Dict[str, Any]:
+        """Send JSON-RPC command to the MCP server and return the response."""
+        try:
+            response = requests.post(
+                "http://localhost:8931/mcp",
+                json=command,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            pytest.fail(f"Failed to send command: {str(e)}")

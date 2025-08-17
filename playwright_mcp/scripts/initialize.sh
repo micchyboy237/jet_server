@@ -1,4 +1,4 @@
-curl -X POST http://localhost:8931/mcp \
+curl -X POST http://localhost:3000/mcp \
   -H "Content-Type: application/json" \
   -H "Accept: application/json, text/event-stream" \
   -d '{

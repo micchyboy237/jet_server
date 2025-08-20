@@ -1,1 +1,0 @@
-npx @playwright/mcp@latest --config mcp-config.json

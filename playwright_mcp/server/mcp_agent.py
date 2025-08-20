@@ -9,7 +9,7 @@ from jet.logger import CustomLogger
 from mlx_lm import load, generate
 from mlx_lm.sample_utils import make_sampler
 
-LOGS_DIR = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/playwright_mcp/server/sample2/logs"
+LOGS_DIR = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server/playwright_mcp/server/logs"
 logger = CustomLogger(f"{LOGS_DIR}/mcp_agent.log", overwrite=True)
 MCP_SERVER_PATH = "mcp_server.py"
 MODEL_PATH = "mlx-community/Qwen3-1.7B-4bit-DWQ-053125"

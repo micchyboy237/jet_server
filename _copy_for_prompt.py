@@ -32,28 +32,16 @@ exclude_files = [
     # "generated",
     # Custom
     "*response*",
-    # "*.sh",
+    "*.sh"
 ]
 include_files = [
-    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/test/_temp_test.py",
-    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/llm/mlx/models.py",
-    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/llm/mlx/server/app.py",
-    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/llm/mlx/server/task_manager.py",
-    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/executor/command.py",
-    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/llm/mlx/mlx_types.py",
-    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/llm/mlx/base.py",
-    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/test/html/index.html",
-
-    # "/Users/jethroestrada/Desktop/External_Projects/AI/repo-libs/mlx-lm/mlx_lm/LORA.md",
-    # "/Users/jethroestrada/Desktop/External_Projects/AI/repo-libs/mlx-lm/mlx_lm/lora.py",
-    # "/Users/jethroestrada/Desktop/External_Projects/AI/repo-libs/mlx-lm/mlx_lm/tuner/trainer.py",
-    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/llm/mlx/train/fine_tune_llama_3_2_1b.sh",
-
-    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/llm/mlx/train/data/sample_chat",
-    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/data/jet-resume/data",
+    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/vectors/semantic_search/file_vector_search.py",
+    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/vectors/semantic_search/text_vector_search.py",
+    "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/servers/mcp/mcp_server.py",
 ]
 structure_include = [
-    # "*.py"
+    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/llm/mlx/tasks/*.py",
+    # "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/JetScripts/data/jet-resume/data",
 ]
 structure_exclude = []
 
@@ -65,14 +53,15 @@ SHORTEN_FUNCTS = False
 INCLUDE_FILE_STRUCTURE = False
 
 DEFAULT_QUERY_MESSAGE = """
-Write unit tests separated by test files given these textblob package documentation
+Now update mcp_server to add a new tool search_texts using text_vector_search.
+""".strip()
+
+DEFAULT_INSTRUCTIONS_MESSAGE = """
 """.strip()
 
 DEFAULT_SYSTEM_MESSAGE = """
 Dont use prior artifact knowledge and memory.
-""".strip()
-
-DEFAULT_INSTRUCTIONS_MESSAGE = """
+Only provide updated parts.
 """.strip()
 
 # For existing projects

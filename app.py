@@ -95,6 +95,7 @@ if __name__ == "__main__":
         port=args.port,
         reload=True,
         reload_dirs=[
-            "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules"
+            "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules",
+            "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_server",
         ],
     )

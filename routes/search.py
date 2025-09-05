@@ -1,33 +1,24 @@
-import asyncio
 import traceback
 from fastapi import APIRouter, Header
 from fastapi.responses import StreamingResponse
 from jet.code.splitter_markdown_utils import get_md_header_contents
-from jet.features.eval_search_and_chat import evaluate_llm_response
-from jet.features.eval_tasks import enqueue_evaluation_task
 from jet.scrapers.browser.playwright_utils import scrape_multiple_urls
 from jet.scrapers.preprocessor import html_to_markdown
 from jet.transformers.object import make_serializable
 from jet.transformers.formatters import format_json
 from jet.utils.collection_utils import group_by
 from jet.wordnet.similarity import compute_info
-from jet.wordnet.wordnet_types import SimilarityResult
-from jet.wordnet.words import count_words
 from pydantic import BaseModel
-from typing import List, Dict, Any, AsyncGenerator, Literal, Optional, Tuple
+from typing import List, Any, AsyncGenerator, Literal, Optional
 import os
-import json
 import shutil
-from llama_index.core.schema import Document as BaseDocument, NodeWithScore
-from jet.features.search_and_chat import compare_html_query_scores, search_and_filter_data, truncate_docs
+from llama_index.core.schema import NodeWithScore
+from jet.features.search_and_chat import compare_html_query_scores, group_nodes
 from jet.llm.models import OLLAMA_EMBED_MODELS, OLLAMA_MODEL_NAMES
-from jet.scrapers.utils import safe_path_from_url, search_data, validate_headers
+from jet.scrapers.utils import safe_path_from_url, search_data
 from jet.llm.ollama.base import Ollama
-from jet.features.search_and_chat import compare_html_results, get_docs_from_html, rerank_nodes, group_nodes
 from llama_index.core.schema import TextNode
 from jet.file.utils import save_file
-from jet.llm.evaluators.context_relevancy_evaluator import evaluate_context_relevancy
-from jet.llm.evaluators.answer_relevancy_evaluator import evaluate_answer_relevancy
 from jet.utils.url_utils import normalize_url
 from jet.logger import logger
 

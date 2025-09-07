@@ -9,7 +9,7 @@ CUSTOM_SERVER=/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_py
 export PYTHONPATH=$MLX_LM_DIR:$PYTHONPATH
 
 # Default model
-DEFAULT_MODEL="mlx-community/Mistral-7B-Instruct-v0.3-4bit"
+DEFAULT_MODEL="mlx-community/Llama-3.2-3B-Instruct-4bit"
 
 # Parse command-line arguments
 MODEL="$DEFAULT_MODEL"

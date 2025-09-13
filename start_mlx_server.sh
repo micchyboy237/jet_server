@@ -15,8 +15,8 @@ DEFAULT_MODEL="mlx-community/Llama-3.2-3B-Instruct-4bit"
 DEFAULT_DRAFT_MODEL="mlx-community/Llama-3.2-1B-Instruct-4bit"
 DEFAULT_NUM_DRAFT_TOKENS=5
 DEFAULT_MAX_TOKENS=1024
-DEFAULT_TEMP=0.7
-DEFAULT_TOP_P=0.9
+DEFAULT_TEMP=0.0
+DEFAULT_TOP_K=1
 DEFAULT_LOG_LEVEL="DEBUG"
 
 # Parse command-line arguments
@@ -25,7 +25,7 @@ DRAFT_MODEL="$DEFAULT_DRAFT_MODEL"
 NUM_DRAFT_TOKENS="$DEFAULT_NUM_DRAFT_TOKENS"
 MAX_TOKENS="$DEFAULT_MAX_TOKENS"
 TEMP="$DEFAULT_TEMP"
-TOP_P="$DEFAULT_TOP_P"
+TOP_K="$DEFAULT_TOP_K"
 LOG_LEVEL="$DEFAULT_LOG_LEVEL"
 
 while [[ $# -gt 0 ]]; do
@@ -50,8 +50,8 @@ while [[ $# -gt 0 ]]; do
             TEMP="$2"
             shift 2
             ;;
-        --top-p)
-            TOP_P="$2"
+        --top-k)
+            TOP_K="$2"
             shift 2
             ;;
         --log-level)
@@ -71,12 +71,12 @@ echo "Using draft model: $DRAFT_MODEL"
 echo "Speculative decoding tokens: $NUM_DRAFT_TOKENS"
 echo "Max tokens: $MAX_TOKENS"
 echo "Temperature: $TEMP"
-echo "Top-p: $TOP_P"
+echo "Top-k: $TOP_K"
 echo "Log level: $LOG_LEVEL"
 
 # Verify PYTHONPATH
 # echo "PYTHONPATH: $PYTHONPATH"
 
 # Run the server with optimized settings
-echo "Executing command: python $CUSTOM_SERVER --host 0.0.0.0 --port 8080 --use-default-chat-template --model $MODEL --draft-model $DRAFT_MODEL --num-draft-tokens $NUM_DRAFT_TOKENS --max-tokens $MAX_TOKENS --temp $TEMP --top-p $TOP_P --log-level $LOG_LEVEL"
-python "$CUSTOM_SERVER" --host 0.0.0.0 --port 8080 --use-default-chat-template --model "$MODEL" --draft-model "$DRAFT_MODEL" --num-draft-tokens "$NUM_DRAFT_TOKENS" --max-tokens "$MAX_TOKENS" --temp "$TEMP" --top-p "$TOP_P" --log-level "$LOG_LEVEL"
+echo "Executing command: python $CUSTOM_SERVER --host 0.0.0.0 --port 8080 --use-default-chat-template --model $MODEL --draft-model $DRAFT_MODEL --num-draft-tokens $NUM_DRAFT_TOKENS --max-tokens $MAX_TOKENS --temp $TEMP --top-k $TOP_K --log-level $LOG_LEVEL"
+python "$CUSTOM_SERVER" --host 0.0.0.0 --port 8080 --use-default-chat-template --model "$MODEL" --draft-model "$DRAFT_MODEL" --num-draft-tokens "$NUM_DRAFT_TOKENS" --max-tokens "$MAX_TOKENS" --temp "$TEMP" --top-k "$TOP_K" --log-level "$LOG_LEVEL"

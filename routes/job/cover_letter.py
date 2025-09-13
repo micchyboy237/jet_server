@@ -7,7 +7,7 @@ from typing import List, Dict, Optional
 from jet.file.utils import save_file, load_file
 from jet.llm.models import OLLAMA_MODEL_NAMES
 from jet.logger import logger
-from jet.token.token_utils import get_ollama_tokenizer
+from jet._token.token_utils import get_ollama_tokenizer
 from llama_index.core.prompts.base import PromptTemplate
 from llama_index.core.utils import set_global_tokenizer
 from jet.llm.ollama.base import Ollama

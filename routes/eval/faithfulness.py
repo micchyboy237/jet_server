@@ -25,7 +25,7 @@ DEFAULT_TEMPERATURE = 0.0
 DEFAULT_MAX_TOKENS = 256
 DEFAULT_CHUNK_SIZE = 512
 # Change this to your actual default path
-DEFAULT_DOCUMENTS_PATH = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/my-jobs/saved/jobs.json"
+DEFAULT_DOCUMENTS_PATH = "/Users/jethroestrada/Desktop/External_Projects/Jet_Apps/my-jobs/saved/jobs.json"
 
 
 # Define the input model for queries

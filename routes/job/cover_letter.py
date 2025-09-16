@@ -21,8 +21,8 @@ from pydantic import BaseModel, ValidationError
 
 router = APIRouter()
 
-JOBS_FILE = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/my-jobs/saved/jobs.json"
-COVER_LETTERS_FILE = "/Users/jethroestrada/Desktop/External_Projects/Jet_Projects/my-jobs/saved/job-cover-letters.json"
+JOBS_FILE = "/Users/jethroestrada/Desktop/External_Projects/Jet_Apps/my-jobs/saved/jobs.json"
+COVER_LETTERS_FILE = "/Users/jethroestrada/Desktop/External_Projects/Jet_Apps/my-jobs/saved/job-cover-letters.json"
 
 PROMPT_TEMPLATE = """\
 Given the prompt, schema and not prior knowledge, answer the query.

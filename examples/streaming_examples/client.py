@@ -1,7 +1,8 @@
 import asyncio
 import json
-
 import httpx
+import websockets  # pip install websockets
+
 from rich.console import Console
 from rich.table import Table
 
@@ -68,12 +69,33 @@ async def demo_mjpeg() -> None:
                     # In real use: parse JPEG from chunk and display/save
 
 
+async def demo_websocket() -> None:
+    console.print("[bold cyan]=== WebSocket (bidirectional) ===[/]")
+    uri = "ws://localhost:8000/stream/ws"
+    async with websockets.connect(uri) as ws:
+        tokens: list[str] = []
+        # Receive server-pushed messages
+        for _ in range(7):
+            msg = await ws.recv()
+            obj = json.loads(msg)
+            tokens.append(obj["text"])
+            console.print(obj)
+        console.print("[green]Full reconstructed message:[/]", " ".join(tokens))
+        
+        # Demo bidirectional: send a message and receive echo
+        test_payload = {"demo": "client message"}
+        await ws.send(json.dumps(test_payload))
+        echo = await ws.recv()
+        console.print("[magenta]Echo from server:[/]", json.loads(echo))
+
+
 async def main() -> None:
     await demo_sse()
     await demo_octet()
     await demo_json_chunk()
     await demo_ndjson()
     await demo_mjpeg()
+    await demo_websocket()
 
 
 if __name__ == "__main__":

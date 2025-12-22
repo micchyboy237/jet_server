@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import AsyncGenerator, Dict, Any
 
-from fastapi import APIRouter
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
 import asyncio
 import json
@@ -103,3 +103,24 @@ async def mjpeg_endpoint() -> StreamingResponse:
         mjpeg_generator(),
         media_type="multipart/x-mixed-replace; boundary=frame",
     )
+
+
+async def websocket_generator(websocket: WebSocket) -> None:
+    """Bidirectional WebSocket streaming – server pushes progressive messages."""
+    await websocket.accept()
+    try:
+        for i in range(7):
+            await asyncio.sleep(0.5)
+            message = {"index": i, "text": f"token_{i}", "final": i == 6}
+            await websocket.send_json(message)
+        # Optionally wait for client messages (echo example)
+        while True:
+            data = await websocket.receive_json()
+            await websocket.send_json({"echo": data})
+    except WebSocketDisconnect:
+        pass
+
+@streaming_router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    """WebSocket endpoint for bidirectional real-time communication."""
+    await websocket_generator(websocket)

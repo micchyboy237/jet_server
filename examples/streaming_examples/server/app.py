@@ -31,5 +31,6 @@ async def root():
             "json_chunk": "/stream/json-chunk",
             "ndjson": "/stream/ndjson",
             "mjpeg": "/stream/mjpeg",
+            "websocket": "/stream/ws (WebSocket)",
         },
     }

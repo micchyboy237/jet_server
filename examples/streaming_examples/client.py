@@ -89,6 +89,14 @@ async def demo_websocket() -> None:
         console.print("[magenta]Echo from server:[/]", json.loads(echo))
 
 
+async def demo_text() -> None:
+    console.print("[bold cyan]=== Plain Text Chunked Stream ===[/]")
+    async with httpx.AsyncClient() as client:
+        async with client.stream("GET", "http://localhost:8000/stream/text") as resp:
+            async for chunk in resp.aiter_text():
+                if chunk:
+                    console.print(chunk, end="")  # Preserve newlines, no extra spacing
+
 async def main() -> None:
     await demo_sse()
     await demo_octet()
@@ -96,7 +104,7 @@ async def main() -> None:
     await demo_ndjson()
     await demo_mjpeg()
     await demo_websocket()
-
+    await demo_text()
 
 if __name__ == "__main__":
     asyncio.run(main())

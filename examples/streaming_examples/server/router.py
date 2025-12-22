@@ -104,6 +104,36 @@ async def mjpeg_endpoint() -> StreamingResponse:
         media_type="multipart/x-mixed-replace; boundary=frame",
     )
 
+# --- BEGIN ADDITION: Plain Text Chunked Streaming Route ---
+
+async def text_generator() -> AsyncGenerator[str, None]:
+    """Simulates plain text chunked streaming (e.g., logs or progress messages)."""
+    messages = [
+        "Starting process...\n",
+        "Processing item 1/10\n",
+        "Processing item 2/10\n",
+        "Processing item 3/10\n",
+        "Halfway there!\n",
+        "Processing item 6/10\n",
+        "Processing item 7/10\n",
+        "Processing item 8/10\n",
+        "Processing item 9/10\n",
+        "Almost done...\n",
+        "Process completed successfully!\n",
+    ]
+    for msg in messages:
+        await asyncio.sleep(0.4)
+        yield msg
+
+@streaming_router.get("/text", response_class=StreamingResponse)
+async def text_endpoint() -> StreamingResponse:
+    """Plain text chunked streaming with Transfer-Encoding: chunked."""
+    return StreamingResponse(
+        text_generator(),
+        media_type="text/plain",
+    )
+
+# --- END ADDITION ---
 
 async def websocket_generator(websocket: WebSocket) -> None:
     """Bidirectional WebSocket streaming – server pushes progressive messages."""

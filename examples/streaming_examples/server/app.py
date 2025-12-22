@@ -32,5 +32,6 @@ async def root():
             "ndjson": "/stream/ndjson",
             "mjpeg": "/stream/mjpeg",
             "websocket": "/stream/ws (WebSocket)",
+            "text": "/stream/text (plain text chunked)",
         },
     }

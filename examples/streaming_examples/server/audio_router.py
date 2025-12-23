@@ -9,6 +9,10 @@ from fastapi.responses import StreamingResponse
 
 audio_router = APIRouter(prefix="/audio", tags=["audio"])
 
+# Expected format for live ASR clients:
+# - Raw 16kHz mono 16-bit PCM (little-endian) audio bytes
+# - Client streams chunks as they are captured (real-time, low latency)
+
 
 def generate_sample_audio_chunk(frame: int) -> bytes:
     """Generate a small 16-bit mono 16kHz sine wave chunk for demo purposes."""

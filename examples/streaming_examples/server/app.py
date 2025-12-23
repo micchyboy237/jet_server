@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from router import streaming_router
 from audio_router import audio_router
+from asr_router import asr_router
 
 app = FastAPI(
     title="HTTP Streaming Demo API",
@@ -21,6 +22,7 @@ app.add_middleware(
 
 app.include_router(streaming_router)
 app.include_router(audio_router)
+app.include_router(asr_router)
 
 @app.get("/", include_in_schema=False)
 async def root():
@@ -39,5 +41,6 @@ async def root():
             "audio_stream": "/audio/stream (HTTP streaming audio playback)",
             "audio_echo": "/audio/echo (WebSocket echo for latency testing)",
             "audio_upload": "POST /audio/upload-transcribe (upload full file \u2192 transcription)",
+            "live_jp_en": "/asr/live-jp-en (Dedicated WebSocket – live Japanese audio \u2192 English text)",
         },
     }

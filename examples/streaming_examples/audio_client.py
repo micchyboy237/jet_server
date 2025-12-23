@@ -158,10 +158,10 @@ async def demo_live_asr() -> None:
 
 
 async def main() -> None:
-    # await demo_http_audio_stream()
-    # await demo_transcribe_websocket()
-    # await demo_echo_websocket()
-    # await demo_upload_transcribe()
+    await demo_http_audio_stream()
+    await demo_transcribe_websocket()
+    await demo_echo_websocket()
+    await demo_upload_transcribe()
     await demo_live_asr()
 
 if __name__ == "__main__":

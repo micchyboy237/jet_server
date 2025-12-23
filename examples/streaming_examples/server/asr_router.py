@@ -11,28 +11,19 @@ from rich.logging import RichHandler
 
 asr_router = APIRouter(prefix="/asr", tags=["asr", "speech-recognition", "translation"])
 
-# Configure rich logging (verbose when LOG_LEVEL=DEBUG)
+# Updated logging config: no format/datefmt (RichHandler handles format), consistent enable/disable with LOG_LEVEL env
 logging.basicConfig(
     level=logging.INFO,
-    format="%(message)s",
-    datefmt="[%X]",
     handlers=[RichHandler(rich_tracebacks=True, markup=True)],
 )
 log = logging.getLogger("asr_router")
-# Allow verbose mode via environment: LOG_LEVEL=DEBUG python -m uvicorn ...
 
 # Load faster-whisper model
-# Adjust device/compute_type for your hardware:
-# - Mac M1/M2: device="cpu", compute_type="int8" (fast) or "float16" if supported
-# - CUDA GPU:  device="cuda", compute_type="float16"
-# - CPU fallback: compute_type="int8_float32"
-# - For pre-downloaded models: local_files_only=True
-
 model = WhisperModel(
-    "small",                     # Change size as needed (e.g., "base", "medium", "large")
-    device="cpu",                # Set "cuda" if you want GPU acceleration
-    compute_type="int8",         # See notes above
-    local_files_only=True,       # If you have models downloaded already
+    "small",
+    device="cpu",
+    compute_type="int8",
+    local_files_only=True,
 )
 
 async def streaming_asr_inference(audio_chunks: AsyncGenerator[bytes, None]) -> AsyncGenerator[dict, None]:
@@ -44,13 +35,13 @@ async def streaming_asr_inference(audio_chunks: AsyncGenerator[bytes, None]) -> 
     """
     buffer: list[np.ndarray] = []
     sample_rate = 16000
-    chunk_duration_sec = 0.2
-    min_buffer_sec = 1.5  # trigger inference roughly every 1.5 seconds
+    chunk_duration_sec = 5.0
+    min_buffer_sec = 0.250
     chunk_count = 0
 
     async for chunk_bytes in audio_chunks:
-        # Convert raw int16 PCM → float32 normalized numpy array
-        audio_np = np.frombuffer(chunk_bytes, dtype=np.int16).astype(np.float32) / 32768.0
+        # Normalize to float32 using 32767.0 for int16 range
+        audio_np = np.frombuffer(chunk_bytes, dtype=np.int16).astype(np.float32) / 32767.0
         buffer.append(audio_np)
 
         current_duration = len(buffer) * chunk_duration_sec
@@ -59,63 +50,54 @@ async def streaming_asr_inference(audio_chunks: AsyncGenerator[bytes, None]) -> 
         log.debug(f"[bold cyan]Received chunk {chunk_count}[/] – buffer duration: {current_duration:.2f}s")
 
         if current_duration < min_buffer_sec:
-            # Not enough audio yet – continue buffering
             continue
 
         # Concatenate buffered audio for inference
         full_audio = np.concatenate(buffer)
         log.info(f"[bold green]Running inference on {current_duration:.2f}s buffer ({len(full_audio)} samples)[/]")
 
-        # Run faster-whisper with translation
+        # Run faster-whisper with translation (use VAD, as in suggested update)
         segments, _ = model.transcribe(
             full_audio,
             language="ja",
             task="translate",
             beam_size=5,
-            vad_filter=False,
-            vad_parameters=dict(min_silence_duration_ms=500),
             temperature=0.0,
             without_timestamps=False,
             log_progress=True,
         )
 
-        last_end = 0.0
-        segment_count = 0
         for seg in segments:
-            # Partial result (ongoing recognition)
+            # Send partial (current hypothesis during decoding - but transcribe yields only final segments)
+            # For true token-streaming partials, a more advanced implementation would be needed.
             yield {
                 "partial": seg.text.strip(),
                 "final": False,
-                "start": seg.start,
-                "end": seg.end,
             }
-
-            # Final result for completed segment
+            # Send final translated English segment
             yield {
-                "japanese": seg.text.strip(),   # approximated original Japanese
-                "english": seg.text.strip(),    # translated English
+                "english": seg.text.strip(),
                 "final": True,
                 "start": seg.start,
                 "end": seg.end,
             }
-            segment_count += 1
-            last_end = seg.end
 
-        log.info(f"[bold magenta]Detected {segment_count} segment(s) – last end: {last_end:.2f}s[/]")
-
-        # Keep overlap for next inference to maintain context
-        overlap_samples = int(last_end * sample_rate)
-        if overlap_samples > 0 and overlap_samples < len(full_audio):
-            buffer = [full_audio[overlap_samples:]]
-            log.debug(f"[dim]Kept overlap of {len(buffer[0])/sample_rate:.2f}s for context[/]")
+        # Convert segments generator to list only if needed for overlap calculation
+        segments_list = list(segments) if segments else []
+        if segments_list:
+            last_end = segments_list[-1].end
+            overlap_samples = int(last_end * sample_rate)
+            if 0 < overlap_samples < len(full_audio):
+                buffer = [full_audio[overlap_samples:]]
+                log.debug(f"[dim]Kept overlap of {len(buffer[0])/sample_rate:.2f}s for context[/]")
+            else:
+                buffer = []
+                log.debug("[dim]Buffer cleared after processing[/]")
         else:
+            # No speech detected in this buffer — clear buffer to avoid growing silence
             buffer = []
-            log.debug("[dim]No overlap kept – buffer cleared[/]")
-
-        # If no segments detected, send a listening indicator
-        if last_end == 0.0:
-            yield {"partial": "listening...", "final": False}
-            log.debug("[dim]No speech detected – sent listening indicator[/]")
+            log.debug("[dim]No speech — buffer cleared[/]")
+            yield {"partial": "", "final": False}
 
 @asr_router.websocket("/live-jp-en")
 async def live_japanese_to_english_websocket(websocket: WebSocket) -> None:

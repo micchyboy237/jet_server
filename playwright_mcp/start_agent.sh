@@ -1,1 +1,0 @@
-python /Users/jethroestrada/Desktop/External_Projects/Jet_Projects/jet_python_modules/jet/servers/mcp/mcp_agent.py

@@ -14,10 +14,10 @@
     "host": "0.0.0.0"
   },
   "timeouts": {
-    "action": 60000,
+    "action": 5000,
     "navigation": 60000,
-    "expect": 60000,
-    "settle": 60000,
+    "expect": 5000,
+    "settle": 500,
     "idle": 3600000
   },
   "capabilities": [

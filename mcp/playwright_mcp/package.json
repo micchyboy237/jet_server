@@ -1,0 +1,20 @@
+{
+  "name": "playwright_mcp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx @playwright/mcp@latest --config mcp-config.json",
+    "test": "npx playwright test tests-examples/ && pytest tests/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/mcp": "^0.0.34",
+    "@playwright/test": "^1.54.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
+  }
+}

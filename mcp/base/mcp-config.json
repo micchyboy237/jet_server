@@ -1,0 +1,33 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "launchOptions": {
+      "headless": false
+    },
+    "contextOptions": {
+      "viewport": { "width": 1920, "height": 1080 }
+    }
+  },
+  "server": {
+    "port": 8931,
+    "host": "0.0.0.0"
+  },
+  "sharedBrowserContext": true,
+  "timeouts": {
+    "action": 5000,
+    "navigation": 60000,
+    "expect": 5000,
+    "settle": 500,
+    "idle": 3600000
+  },
+  "capabilities": [
+    "network",
+    "storage",
+    "testing",
+    "pdf",
+    "devtools",
+    "vision",
+    "config"
+  ],
+  "outputDir": "./mcp-output"
+}

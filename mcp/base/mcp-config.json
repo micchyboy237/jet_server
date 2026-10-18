@@ -1,18 +1,18 @@
 {
+  "sharedBrowserContext": false,
   "browser": {
-    "browserName": "chromium",
+    "isolated": true,
     "launchOptions": {
       "headless": false
     },
     "contextOptions": {
-      "viewport": { "width": 1920, "height": 1080 }
+      "viewport": { "width": 1280, "height": 720 }
     }
   },
   "server": {
     "port": 8931,
     "host": "0.0.0.0"
   },
-  "sharedBrowserContext": true,
   "timeouts": {
     "action": 5000,
     "navigation": 60000,
@@ -29,5 +29,5 @@
     "vision",
     "config"
   ],
-  "outputDir": "./mcp-output"
+  "outputDir": "/Users/jethroestrada/.cache/mcp-output/base"
 }
